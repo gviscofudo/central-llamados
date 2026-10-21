@@ -169,18 +169,34 @@ form.log textarea{min-height:70px;resize:vertical}
 .modal .box{background:var(--surface);border:1px solid var(--line);border-radius:14px;width:min(560px,100%);max-height:85vh;overflow:auto;padding:20px}
 .modal h2{margin:0 0 6px;font-size:20px}
 .team-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
-.team-add{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin:14px 0}
+.team-add{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.team-add #tAdd{grid-column:1/-1}
+.pw-row{display:flex;gap:6px}.pw-row input{flex:1;min-width:0}
 .team-add input,.team-add select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
 @media (max-width:640px){.team-add{grid-template-columns:1fr}}
 .modal{background:rgba(10,10,10,.4)}
+
+.login-form{display:flex;flex-direction:column;gap:6px;text-align:left}
+.login-form .lbl{font-size:13px;font-weight:600;color:var(--ink-2)}
+.login-form input{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.login-form .gbtn{justify-content:center;margin-top:6px}
+.login-err{color:var(--s-rech);min-height:1.2em;margin:8px 0 0!important;font-size:14px}
+.team-row .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 </style>
 </head>
 <body>
 <div id="loginView" class="login" hidden>
   <h1>Central de llamados</h1>
-  <p id="loginMsg">Ingresá con tu cuenta de Google de Fudo.</p>
-  <button class="gbtn" id="btnLogin" type="button">Ingresar con Google</button>
-  <p style="margin-top:16px"><button class="btn" id="btnLogout2" type="button" hidden>Usar otra cuenta</button></p>
+  <p id="loginMsg">Ingresá con el usuario que te dio tu líder.</p>
+  <form id="loginForm" class="login-form">
+    <label class="lbl" for="lEmail">Mail</label>
+    <input id="lEmail" type="email" autocomplete="username" placeholder="nombre@fu.do" required>
+    <label class="lbl" for="lPass">Contraseña</label>
+    <input id="lPass" type="password" autocomplete="current-password" required>
+    <button class="gbtn" id="btnLogin" type="submit">Ingresar</button>
+    <p class="login-err" id="loginErr" role="alert"></p>
+  </form>
+  <p style="margin-top:8px"><button class="btn" id="btnLogout2" type="button" hidden>Usar otra cuenta</button></p>
 </div>
 
 <div id="appView" hidden>
@@ -196,6 +212,7 @@ form.log textarea{min-height:70px;resize:vertical}
       <button class="btn" id="btnExport" type="button">Exportar CSV</button>
       <button class="btn primary" id="btnRefresh" type="button">Actualizar desde HubSpot</button>
       <span class="who-me" id="whoMe"></span>
+      <button class="btn" id="btnPw" type="button">Cambiar contraseña</button>
       <button class="btn" id="btnLogout" type="button">Salir</button>
     </div>
   </header>
@@ -260,13 +277,31 @@ form.log textarea{min-height:70px;resize:vertical}
       <h2 id="teamTitle">Equipo con acceso</h2>
       <button class="x" id="teamClose" type="button" aria-label="Cerrar">×</button>
     </div>
-    <p class="muted" style="margin:0">Solo entran mails @fu.do que estén en esta lista y activos.</p>
+    <p class="muted" style="margin:0">Creá el usuario y pasale el mail y la contraseña al ejecutivo. Después puede cambiarla desde el panel.</p>
     <div class="team-add">
-      <input id="tEmail" type="email" placeholder="nombre@fu.do">
-      <input id="tNombre" type="text" placeholder="Nombre y apellido">
-      <button class="btn primary" id="tAdd" type="button">Agregar</button>
+      <input id="tEmail" type="email" placeholder="nombre@fu.do" aria-label="Mail">
+      <input id="tNombre" type="text" placeholder="Nombre y apellido" aria-label="Nombre">
+      <select id="tRol" aria-label="Rol"><option value="ejecutivo">Ejecutivo</option><option value="lider">Líder</option></select>
+      <div class="pw-row"><input id="tPass" type="text" placeholder="Contraseña (mín. 8)" aria-label="Contraseña"><button class="btn" id="tGen" type="button">Generar</button></div>
+      <button class="btn primary" id="tAdd" type="button">Crear usuario</button>
     </div>
+    <p class="muted" id="tMsg" role="status"></p>
     <div id="teamList"></div>
+  </div>
+</div>
+<div class="modal" id="pwModal" role="dialog" aria-labelledby="pwTitle">
+  <div class="box" style="max-width:420px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2 id="pwTitle">Cambiar contraseña</h2>
+      <button class="x" id="pwClose" type="button" aria-label="Cerrar">×</button>
+    </div>
+    <form id="pwForm" class="login-form" style="text-align:left">
+      <label class="lbl" for="pw1">Nueva contraseña</label>
+      <input id="pw1" type="password" autocomplete="new-password" minlength="8" required>
+      <label class="lbl" for="pw2">Repetila</label>
+      <input id="pw2" type="password" autocomplete="new-password" minlength="8" required>
+      <button class="gbtn" type="submit">Guardar</button>
+    </form>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -313,14 +348,19 @@ async function fnError(error){
 }
 
 /* ---------- Auth ---------- */
-$("btnLogin").onclick=()=>sb.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname,queryParams:{hd:"fu.do",prompt:"select_account"}}});
+$("loginForm").onsubmit=async ev=>{
+  ev.preventDefault(); $("loginErr").textContent=""; $("btnLogin").disabled=true;
+  const {error}=await sb.auth.signInWithPassword({email:$("lEmail").value.trim().toLowerCase(),password:$("lPass").value});
+  $("btnLogin").disabled=false;
+  if(error) $("loginErr").textContent=/invalid/i.test(error.message)?"Mail o contraseña incorrectos.":error.message;
+};
 const logout=async()=>{await sb.auth.signOut();location.reload()};
 $("btnLogout").onclick=logout; $("btnLogout2").onclick=logout;
 
 function showLogin(msg,withLogout){
   $("appView").hidden=true;$("loginView").hidden=false;
-  $("loginMsg").textContent=msg||"Ingresá con tu cuenta de Google de Fudo.";
-  $("btnLogin").hidden=!!withLogout; $("btnLogout2").hidden=!withLogout;
+  $("loginMsg").textContent=msg||"Ingresá con el usuario que te dio tu líder.";
+  $("loginForm").hidden=!!withLogout; $("btnLogout2").hidden=!withLogout;
 }
 async function onSession(session){
   if(!session){showLogin();return}
@@ -439,7 +479,7 @@ function closeDrawer(){
   if(prev){const tr=document.querySelector(`tr[data-id="${CSS.escape(prev.id)}"]`); if(tr) tr.focus()}
 }
 $("dClose").onclick=closeDrawer; $("scrim").onclick=closeDrawer;
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("teamModal").classList.contains("open"))$("teamModal").classList.remove("open");else if(selected)closeDrawer()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("pwModal").classList.contains("open"))$("pwModal").classList.remove("open");else if($("teamModal").classList.contains("open"))$("teamModal").classList.remove("open");else if(selected)closeDrawer()}});
 
 function renderDrawerHeaderBits(){
   if(!selected) return;
@@ -607,24 +647,48 @@ $("btnExport").onclick=()=>{
   const csv="\uFEFF"+[cols,...rows].map(r=>r.map(q).join(";")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="gestion-bloqueadas-activas.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 };
+const genPass=()=>{const c="abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";const r=crypto.getRandomValues(new Uint32Array(12));return Array.from(r,x=>c[x%c.length]).join("")};
 async function loadTeam(){
   const {data,error}=await sb.from("equipo").select("*").order("nombre");
   if(error){$("teamList").innerHTML=`<p class="muted">${esc(error.message)}</p>`;return}
-  $("teamList").innerHTML=data.map(r=>`<div class="team-row"><div><b>${esc(r.nombre||r.email)}</b><div class="muted">${esc(r.email)}, ${esc(r.rol)}</div></div>
-    ${r.email===(me.email||"").toLowerCase()?"":`<button class="btn" type="button" data-t="${esc(r.email)}" data-a="${r.activo?"0":"1"}">${r.activo?"Quitar acceso":"Dar acceso"}</button>`}</div>`).join("");
+  const yo=(me.email||"").toLowerCase();
+  $("teamList").innerHTML=data.map(r=>`<div class="team-row"><div><b>${esc(r.nombre||r.email)}</b><div class="muted">${esc(r.email)}, ${r.rol==="lider"?"líder":"ejecutivo"}${r.activo?"":", sin acceso"}</div></div>
+    ${r.email===yo?"":`<div class="acts"><button class="btn" type="button" data-pw="${esc(r.email)}">Nueva contraseña</button>
+    <button class="btn" type="button" data-t="${esc(r.email)}" data-a="${r.activo?"0":"1"}">${r.activo?"Quitar acceso":"Dar acceso"}</button></div>`}</div>`).join("");
   $("teamList").querySelectorAll("button[data-t]").forEach(b=>b.onclick=async()=>{
     const {error}=await sb.from("equipo").update({activo:b.dataset.a==="1"}).eq("email",b.dataset.t);
     if(error) toast(error.message); loadTeam();
   });
+  $("teamList").querySelectorAll("button[data-pw]").forEach(b=>b.onclick=async()=>{
+    const pw=genPass(); b.disabled=true;
+    const {error}=await sb.functions.invoke("usuarios",{body:{accion:"reset",email:b.dataset.pw,password:pw}});
+    b.disabled=false;
+    $("tMsg").innerHTML=error?esc("No se pudo cambiar: "+await fnError(error)):`Nueva contraseña de ${esc(b.dataset.pw)}: <b style="user-select:all">${esc(pw)}</b>. Copiala ahora, no se vuelve a mostrar.`;
+  });
 }
 $("btnEquipo").onclick=()=>{$("teamModal").classList.add("open");loadTeam();$("tEmail").focus()};
 $("teamClose").onclick=()=>$("teamModal").classList.remove("open");
+$("tGen").onclick=()=>{$("tPass").value=genPass()};
 $("tAdd").onclick=async()=>{
-  const email=$("tEmail").value.trim().toLowerCase(), nombre=$("tNombre").value.trim();
+  const email=$("tEmail").value.trim().toLowerCase(), nombre=$("tNombre").value.trim(), password=$("tPass").value, rol=$("tRol").value;
   if(!/^[^@\s]+@fu\.do$/.test(email)){toast("Ingresá un mail @fu.do");return}
-  const {error}=await sb.from("equipo").upsert({email,nombre:nombre||null,rol:"ejecutivo",activo:true},{onConflict:"email"});
-  if(error){toast("No se pudo agregar: "+error.message);return}
-  $("tEmail").value="";$("tNombre").value=""; toast("Agregado al equipo"); loadTeam();
+  if(password.length<8){toast("La contraseña tiene que tener al menos 8 caracteres");return}
+  $("tAdd").disabled=true;
+  const {error}=await sb.functions.invoke("usuarios",{body:{email,nombre,password,rol}});
+  $("tAdd").disabled=false;
+  if(error){$("tMsg").textContent="No se pudo crear: "+await fnError(error);return}
+  $("tMsg").innerHTML=`Listo. Pasale a ${esc(nombre||email)}: mail <b>${esc(email)}</b>, contraseña <b style="user-select:all">${esc(password)}</b>. Copiala ahora, no se vuelve a mostrar.`;
+  $("tEmail").value="";$("tNombre").value="";$("tPass").value=""; loadTeam();
+};
+$("btnPw").onclick=()=>{$("pwModal").classList.add("open");$("pw1").focus()};
+$("pwClose").onclick=()=>$("pwModal").classList.remove("open");
+$("pwForm").onsubmit=async ev=>{
+  ev.preventDefault();
+  if($("pw1").value.length<8){toast("Mínimo 8 caracteres");return}
+  if($("pw1").value!==$("pw2").value){toast("Las contraseñas no coinciden");return}
+  const {error}=await sb.auth.updateUser({password:$("pw1").value});
+  if(error){toast("No se pudo cambiar: "+error.message);return}
+  $("pwForm").reset();$("pwModal").classList.remove("open");toast("Contraseña actualizada");
 };
 })();
 
