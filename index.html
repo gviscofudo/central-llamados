@@ -213,6 +213,30 @@ form.log textarea{min-height:70px;resize:vertical}
 .col .d{font-size:11px;color:var(--ink-3);white-space:nowrap}
 .empty-ch{color:var(--ink-3);font-size:13.5px;padding:10px 0}
 @media (max-width:640px){.hrow{grid-template-columns:100px 1fr 56px}}
+
+.menu-wrap{position:relative}
+.hamb{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#fff;border:1px solid #5A5A5E;border-radius:999px;padding:7px 14px 7px 12px;cursor:pointer;font-weight:600}
+.hamb:hover,.hamb[aria-expanded="true"]{border-color:#fff}
+.bars{display:inline-flex;flex-direction:column;gap:3px}
+.bars i{display:block;width:16px;height:2px;border-radius:2px;background:currentColor}
+.menu{position:absolute;right:0;top:calc(100% + 8px);min-width:240px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:6px;z-index:15}
+.menu-head{display:flex;flex-direction:column;padding:8px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:4px;font-size:13px}
+.menu-head span{color:var(--ink-3);overflow:hidden;text-overflow:ellipsis}
+.menu button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:8px;padding:9px 10px;cursor:pointer;font-weight:500;font-size:14px}
+.menu button:hover,.menu button:focus-visible{background:var(--brand-soft)}
+.menu button:disabled{opacity:.5;cursor:default}
+.menu-sep{height:1px;background:var(--line);margin:4px 0}
+@media (max-width:640px){.hamb-name{display:none}}
+.sus{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 11px;font-size:13px;font-weight:700;margin-top:8px}
+.sus::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.sus.si{background:#E3F5EC;color:#137A53}
+.sus.no{background:#FDECEA;color:#B23B32}
+.sus.nd{background:var(--surface-2);color:var(--ink-3)}
+:root[data-theme="dark"] .sus.si{background:#123526;color:#5FD3A2}
+:root[data-theme="dark"] .sus.no{background:#3A1A17;color:#FF8F85}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sus.si{background:#123526;color:#5FD3A2}:root:not([data-theme="light"]) .sus.no{background:#3A1A17;color:#FF8F85}}
+.tag-sus{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;color:#137A53;background:#E3F5EC;border-radius:999px;padding:1px 7px;vertical-align:middle}
+tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -239,12 +263,20 @@ form.log textarea{min-height:70px;resize:vertical}
     </div>
     <div class="top-actions">
       <span class="fresh" id="fresh"></span>
-      <button class="btn" id="btnEquipo" type="button" hidden>Equipo</button>
-      <button class="btn" id="btnExport" type="button">Exportar CSV</button>
-      <button class="btn primary" id="btnRefresh" type="button">Actualizar desde HubSpot</button>
-      <span class="who-me" id="whoMe"></span>
-      <button class="btn" id="btnPw" type="button">Cambiar contraseña</button>
-      <button class="btn" id="btnLogout" type="button">Salir</button>
+      <div class="menu-wrap">
+        <button class="hamb" id="btnMenu" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">
+          <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span><span class="hamb-name" id="whoMe"></span>
+        </button>
+        <div class="menu" id="menu" role="menu" hidden>
+          <div class="menu-head"><b id="menuName"></b><span id="menuMail"></span></div>
+          <button type="button" role="menuitem" id="btnRefresh">Actualizar desde HubSpot</button>
+          <button type="button" role="menuitem" id="btnExport">Exportar CSV</button>
+          <button type="button" role="menuitem" id="btnEquipo" hidden>Equipo y usuarios</button>
+          <div class="menu-sep" role="separator"></div>
+          <button type="button" role="menuitem" id="btnPw">Cambiar contraseña</button>
+          <button type="button" role="menuitem" id="btnLogout">Salir</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -264,7 +296,7 @@ form.log textarea{min-height:70px;resize:vertical}
     <div class="card"><h3>Llamados por día</h3><p class="muted cap">Últimos 14 días. Naranja: atendidos. Gris: no atendidos, buzón o número erróneo.</p><div id="chDias"></div></div>
     <div class="grid2">
       <div class="card"><h3>Propuestas aceptadas</h3><div id="chProp"></div></div>
-      <div class="card"><h3>Motivos de baja</h3><div id="chMot"></div></div>
+      <div class="card"><h3>Motivos de baja</h3><p class="muted cap">Total de bajas que generó la campaña, incluidas las cuentas que ya salieron de la lista.</p><div id="chMot"></div></div>
     </div>
   </section>
 
@@ -294,6 +326,9 @@ form.log textarea{min-height:70px;resize:vertical}
         <option value="nombre">Nombre</option>
       </select>
     </label>
+    <label>Suscripción
+      <select id="fSus"><option value="">Todas</option><option value="si">Con suscripción activa</option><option value="no">Sin suscripción activa</option></select>
+    </label>
     <label>Buscar
       <input type="search" id="fQ" placeholder="Nombre de cuenta o ID">
     </label>
@@ -319,7 +354,7 @@ form.log textarea{min-height:70px;resize:vertical}
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="dTitle" role="dialog">
   <div class="d-head">
-    <div><h2 id="dTitle"></h2><div class="acc-id" id="dSub"></div></div>
+    <div><h2 id="dTitle"></h2><div class="acc-id" id="dSub"></div><div id="dSus" class="sus-wrap"></div></div>
     <button class="x" id="dClose" type="button" aria-label="Cerrar">×</button>
   </div>
   <div class="d-body" id="dBody"></div>
@@ -424,7 +459,7 @@ async function onSession(session){
   if(!row||!row.activo){showLogin(`Tu usuario (${email}) todavía no tiene acceso. Pedile a tu líder que te agregue al equipo del panel.`,true);return}
   meRow=row;
   $("loginView").hidden=true;$("appView").hidden=false;
-  $("whoMe").textContent=row.nombre||email;
+  $("whoMe").textContent=row.nombre||email; $("menuName").textContent=row.nombre||email; $("menuMail").textContent=email;
   $("btnEquipo").hidden=row.rol!=="lider";
   $("tabs").hidden=row.rol!=="lider";
   if(!started){started=true;start()}
@@ -436,7 +471,7 @@ function mapCuenta(c){
   const last=toD(c.ultima_venta), login=toD(c.ultimo_login);
   return {id:c.deal_id,name:c.nombre||"(sin nombre)",accountId:c.account_id||"",plan:c.plan||"",amount:c.monto,
     close:toD(c.fecha_alta),ventas:c.ventas,lastSale:last,daysNoSale:daysSince(last),ejecId:c.ejecutivo_id||"",
-    ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",lastLogin:login,daysNoLogin:daysSince(login),
+    ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",lastLogin:login,sus:c.suscripcion_activa,daysNoLogin:daysSince(login),
     dash:c.link_dash||(/^\d+$/.test(c.account_id||"")?`https://dash.fu.do/accounts/${c.account_id}`:""),estadoDate:toD(c.fecha_estado),lastOkCall:toD(c.ultimo_llamado_exitoso)};
 }
 async function loadCuentas(){
@@ -479,8 +514,8 @@ function fillEjecutivos(){
   if(names.includes(cur)) sel.value=cur;
 }
 function baseFiltered(){
-  const e=$("fEjec").value, q=$("fQ").value.trim().toLowerCase();
-  return deals.filter(d=>(!e||d.ejec===e)&&(!q||d.name.toLowerCase().includes(q)||d.accountId.includes(q)));
+  const e=$("fEjec").value, q=$("fQ").value.trim().toLowerCase(), s=$("fSus").value;
+  return deals.filter(d=>(!e||d.ejec===e)&&(!s||(s==="si"?d.sus===true:d.sus!==true))&&(!q||d.name.toLowerCase().includes(q)||d.accountId.includes(q)));
 }
 function sortList(list){
   const s=$("fSort").value, g=id=>gestion[id]||{};
@@ -515,7 +550,7 @@ function render(){
     const dcls=ds==null?"muted":ds<=30?"days-hot":ds>90?"days-cold":"";
     const dl=d.daysNoLogin, lcls=dl==null?"muted":dl<=7?"days-hot":dl>30?"days-cold":"";
     return `<tr data-id="${esc(d.id)}" class="${selected&&selected.id===d.id?"sel":""}" tabindex="0">
-      <td><div class="acc-name">${esc(d.name)}</div><div class="acc-id">ID ${esc(d.accountId||"–")}</div></td>
+      <td><div class="acc-name">${esc(d.name)}${d.sus===true?`<span class="tag-sus" title="Suscripción activa">Susc. activa</span>`:""}</div><div class="acc-id">ID ${esc(d.accountId||"–")}</div></td>
       <td>${esc(d.ejec)}</td>
       <td class="muted">${esc(d.plan||"–")}</td>
       <td class="num">${fmtN(d.ventas)}</td>
@@ -553,6 +588,7 @@ function openDrawer(d){
   const g=gestion[d.id]||{};
   $("dTitle").textContent=d.name;
   $("dSub").textContent=`ID de cuenta ${d.accountId||"–"}, ${d.ejec}`;
+  $("dSus").innerHTML=d.sus===true?`<span class="sus si">Suscripción activa</span>`:d.sus===false?`<span class="sus no">Sin suscripción activa</span>`:`<span class="sus nd">Suscripción sin dato</span>`;
   const hubspotUrl=`https://app.hubspot.com/contacts/${HS_PORTAL}/record/0-3/${encodeURIComponent(d.id)}`;
   const dashUrl=/^https?:\/\//.test(d.dash)?d.dash:"";
   const opt=(name,vals)=>vals.map((v,i)=>`<input type="radio" name="${name}" id="${name}${i}" value="${esc(v)}"><label for="${name}${i}">${esc(v)}</label>`).join("");
@@ -692,6 +728,18 @@ async function loadContacts(d){
   }));
 }
 
+/* ---------- Menú ---------- */
+function setMenu(open){$("menu").hidden=!open;$("btnMenu").setAttribute("aria-expanded",open);if(open){const f=$("menu").querySelector("button:not([hidden])");f&&f.focus()}}
+$("btnMenu").onclick=e=>{e.stopPropagation();setMenu($("menu").hidden)};
+document.addEventListener("click",e=>{if(!$("menu").hidden&&!e.target.closest(".menu-wrap"))setMenu(false)});
+$("menu").addEventListener("click",e=>{if(e.target.closest("button"))setTimeout(()=>setMenu(false),0)});
+$("menu").addEventListener("keydown",e=>{
+  const items=[...$("menu").querySelectorAll("button:not([hidden])")], i=items.indexOf(document.activeElement);
+  if(e.key==="ArrowDown"){e.preventDefault();items[(i+1)%items.length].focus()}
+  else if(e.key==="ArrowUp"){e.preventDefault();items[(i-1+items.length)%items.length].focus()}
+  else if(e.key==="Escape"){e.stopPropagation();setMenu(false);$("btnMenu").focus()}
+});
+
 /* ---------- Avance del equipo (solo líderes) ---------- */
 let vista="llamados";
 function setVista(v){
@@ -724,10 +772,13 @@ async function renderAdmin(){
   const total=deals.length, est={}; Object.keys(ESTADOS).forEach(k=>est[k]=0); deals.forEach(d=>est[estadoDe(d.id)]++);
   const gest=total-est.pendiente, atend=llC.filter(l=>l.resultado==="Atendió").length;
   const cuentasContactadas=new Set(llC.filter(l=>l.resultado==="Atendió").map(l=>l.deal_id)).size;
+  // Bajas generadas por la campaña: todo el historial, incluidas las cuentas que ya salieron de la lista
+  const bajaPorCuenta=new Map(); ll.filter(l=>l.solicita_baja).forEach(l=>{if(!bajaPorCuenta.has(l.deal_id))bajaPorCuenta.set(l.deal_id,l)});
+  const bajasCampana=bajaPorCuenta.size;
   const k=(t,v,s)=>`<div class="kpi"><div class="k">${t}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:""}</div>`;
   $("kpis").innerHTML=k("Cuentas en campaña",fmtN(total))+k("Gestionadas",pct(gest,total)+"%",fmtN(gest)+" cuentas")+
     k("Contactadas",fmtN(cuentasContactadas),pct(cuentasContactadas,total)+"% de las cuentas")+k("Llamados",fmtN(llC.length),"Tasa de atención "+pct(atend,llC.length)+"%")+
-    k("Aceptan propuesta",fmtN(est.acepta),fmtN(est.regularizo)+" ya regularizaron")+k("Solicitan baja",fmtN(est.solicita_baja));
+    k("Aceptan propuesta",fmtN(est.acepta),fmtN(est.regularizo)+" ya regularizaron")+k("Bajas generadas por la campaña",fmtN(bajasCampana),"Total de la campaña");
 
   // Avance por ejecutivo (dueño de la cuenta)
   const byE={}; deals.forEach(d=>{const e=d.ejec;(byE[e]=byE[e]||{total:0,est:{}}).total++;const s=estadoDe(d.id);byE[e].est[s]=(byE[e].est[s]||0)+1});
@@ -740,7 +791,8 @@ async function renderAdmin(){
   $("chEjecLegend").innerHTML=orden.map(s=>`<span class="chip" style="cursor:default"><span class="dot" style="background:${ESTADOS[s].color}"></span>${esc(ESTADOS[s].label)}</span>`).join("");
 
   // Actividad por persona que llamó
-  const byP={}; llC.forEach(l=>{const n=l.por_nombre||l.por_email;const o=byP[n]=byP[n]||{ll:0,at:0,cu:new Set(),ac:0,ba:0};o.ll++;if(l.resultado==="Atendió")o.at++;o.cu.add(l.deal_id);if(l.respuesta==="Acepta")o.ac++;if(l.solicita_baja)o.ba++});
+  const byP={}; llC.forEach(l=>{const n=l.por_nombre||l.por_email;const o=byP[n]=byP[n]||{ll:0,at:0,cu:new Set(),ac:0,ba:0};o.ll++;if(l.resultado==="Atendió")o.at++;o.cu.add(l.deal_id);if(l.respuesta==="Acepta")o.ac++});
+  ll.filter(l=>l.solicita_baja&&bajaPorCuenta.get(l.deal_id)===l).forEach(l=>{const n=l.por_nombre||l.por_email;const o=byP[n]=byP[n]||{ll:0,at:0,cu:new Set(),ac:0,ba:0};o.ba++});
   const act=Object.entries(byP).sort((a,b)=>b[1].ll-a[1].ll), maxL=Math.max(1,...act.map(a=>a[1].ll));
   $("chAct").innerHTML=act.length?`<div class="tscroll"><table class="acttable"><thead><tr><th>Persona</th><th>Llamados</th><th>Cuentas</th><th>Atendidos</th><th>Aceptan</th><th>Bajas</th></tr></thead><tbody>${
     act.map(([n,o])=>`<tr><td>${esc(n)}</td><td>${fmtN(o.ll)}<span class="mb" style="width:${Math.max(4,o.ll/maxL*60)}px"></span></td><td>${fmtN(o.cu.size)}</td><td>${fmtN(o.at)} <span class="muted">(${pct(o.at,o.ll)}%)</span></td><td>${fmtN(o.ac)}</td><td>${fmtN(o.ba)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty-ch">Todavía no hay llamados registrados.</div>`;
@@ -759,24 +811,24 @@ async function renderAdmin(){
   const gs=deals.map(d=>gestion[d.id]).filter(Boolean);
   const prop={}; gs.filter(g=>g.estado==="acepta"&&g.propuesta).forEach(g=>prop[g.propuesta]=(prop[g.propuesta]||0)+1);
   hbars($("chProp"),PROPUESTAS.map(p=>({label:p,n:prop[p]||0})),"var(--s-acep)");
-  const mot={}; gs.filter(g=>g.solicita_baja&&g.motivo).forEach(g=>mot[g.motivo]=(mot[g.motivo]||0)+1);
+  const mot={}; bajaPorCuenta.forEach(l=>{const m=l.motivo||"Sin motivo";mot[m]=(mot[m]||0)+1});
   hbars($("chMot"),Object.entries(mot).sort((a,b)=>b[1]-a[1]).map(([l,n])=>({label:l,n})),"var(--s-rech)");
 }
 
 /* ---------- Sync manual, export, equipo ---------- */
 $("btnRefresh").onclick=async()=>{
-  const b=$("btnRefresh"); b.disabled=true; b.textContent="Actualizando…";
+  const b=$("btnRefresh"); b.disabled=true; b.textContent="Actualizando…"; toast("Actualizando desde HubSpot…");
   const {data,error}=await sb.functions.invoke("sync-cuentas",{body:{}});
   b.disabled=false; b.textContent="Actualizar desde HubSpot";
   if(error){const m=await fnError(error);banner("No se pudo actualizar desde HubSpot: "+esc(m),"err");return}
   banner(""); toast(`${fmtN(data.cuentas)} cuentas actualizadas`); loadCuentas(); loadSyncInfo();
 };
-["fEjec","fSort"].forEach(id=>$(id).addEventListener("change",render));
+["fEjec","fSort","fSus"].forEach(id=>$(id).addEventListener("change",render));
 $("fQ").addEventListener("input",render);
 $("btnExport").onclick=()=>{
-  const cols=["Cuenta","ID cuenta","Ejecutivo","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Próximo llamado"];
+  const cols=["Cuenta","ID cuenta","Ejecutivo","Suscripción activa","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Próximo llamado"];
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.proximo_llamado]});
+  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,d.sus===true?"Sí":d.sus===false?"No":"",d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.proximo_llamado]});
   const csv="\uFEFF"+[cols,...rows].map(r=>r.map(q).join(";")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="gestion-bloqueadas-activas.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 };
