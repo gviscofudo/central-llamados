@@ -673,7 +673,7 @@ function openDrawer(d){
         <div class="field"><label class="lbl" for="prox">Volver a llamar el</label><input id="prox" type="date" value="${esc(g.proximo_llamado||"")}"></div>
       </div>
       <div class="field"><label class="lbl" for="notas">Notas</label><textarea id="notas" placeholder="Qué dijo, compromisos, próximos pasos"></textarea></div>
-      <label class="sync"><input type="checkbox" id="syncHs" checked><span>Guardar también en HubSpot: queda como nota en el negocio y, si cargaste fecha para volver a llamar, se crea una tarea de llamada para ${esc(d.ejec==="Sin asignar"?"vos":d.ejec)}.</span></label>
+      <label class="sync"><input type="checkbox" id="syncHs" checked><span>Guardar el registro en HubSpot: queda como nota en el negocio y, si cargaste fecha para volver a llamar, se crea una tarea de llamada para ${esc(d.ejec==="Sin asignar"?"vos":d.ejec)}. La solicitud de baja se graba en HubSpot siempre, aunque esto esté destildado.</span></label>
       <div class="form-foot"><span class="attempt" id="attemptN"></span><button class="btn primary" type="submit" id="btnSave">Guardar contacto</button></div>
     </form>
     <h3>Historial de gestiones</h3>
@@ -712,7 +712,8 @@ function planLine(l){
 }
 function hsLine(l){
   if(!l.hs_estado||l.hs_estado==="omitido") return "";
-  if(l.hs_estado==="ok") return `<div class="hs ok">Guardado en HubSpot: nota${l.hs_tarea_id?", tarea":""}${l.hs_negocio_ok?", Solicita Baja y motivo en el negocio":""}</div>`;
+  if(l.hs_estado==="ok"){const p=[l.hs_nota_id&&"nota",l.hs_tarea_id&&"tarea",l.hs_negocio_ok&&"Solicita Baja y motivo en el negocio"].filter(Boolean);
+    return `<div class="hs ok">Guardado en HubSpot: ${p.join(", ")||"sin cambios"}</div>`}
   if(l.hs_estado==="pendiente"||l.hs_estado==="enviando") return `<div class="hs wait">Enviando a HubSpot…</div>`;
   const mine=l.por_email===(me.email||"").toLowerCase()||meRow.rol==="lider";
   return `<div class="hs err">No se guardó en HubSpot: ${esc(l.hs_detalle||"")}${mine?` <button type="button" data-retry="${esc(l.id)}">Reintentar</button>`:""}</div>`;
@@ -754,7 +755,7 @@ async function saveLog(d){
   const tel=$("tel").value, prox=$("prox").value;
   $("logForm").reset();$("respBox").hidden=true;$("motBox").hidden=true;$("actBox").hidden=true;$("tel").value=tel;$("prox").value=prox;$("syncHs").checked=true;
   loadLlamados(d);
-  if(enviar&&data&&data.id) enviarHubSpot(data.id);
+  if((enviar||baja)&&data&&data.id) enviarHubSpot(data.id);
   if(act&&data&&data.id) enviarPlanilla(data.id);
 }
 async function enviarPlanilla(id){
@@ -766,7 +767,7 @@ async function enviarPlanilla(id){
 async function enviarHubSpot(id){
   const {data,error}=await sb.functions.invoke("hubspot-llamado",{body:{llamado_id:id}});
   if(error){toast("No se pudo guardar en HubSpot: "+await fnError(error))}
-  else toast(data&&data.hs_tarea_id?"Nota y tarea creadas en HubSpot":"Nota creada en HubSpot");
+  else{const p=[data&&data.hs_nota_id&&"nota",data&&data.hs_tarea_id&&"tarea",data&&data.hs_negocio_ok&&"solicitud de baja"].filter(Boolean);toast(p.length?"Guardado en HubSpot: "+p.join(", "):"HubSpot actualizado")}
   if(selected) loadLlamados(selected);
 }
 
