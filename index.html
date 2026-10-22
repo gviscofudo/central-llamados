@@ -182,6 +182,37 @@ form.log textarea{min-height:70px;resize:vertical}
 .login-form .gbtn{justify-content:center;margin-top:6px}
 .login-err{color:var(--s-rech);min-height:1.2em;margin:8px 0 0!important;font-size:14px}
 .team-row .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+
+.tabs{display:flex;gap:6px;margin:0 0 14px}
+.tab{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 16px;font-weight:600;cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .k{font-size:12.5px;color:var(--ink-3)}
+.kpi .v{font-size:26px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12.5px;color:var(--ink-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:14px;min-width:0}
+.card h3{margin:0 0 2px}
+.cap{margin:0 0 12px;font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2 .card{margin-bottom:14px}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.hrow{display:grid;grid-template-columns:150px 1fr 70px;gap:10px;align-items:center;padding:6px 0;font-size:13.5px}
+.hrow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.hrow .val{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2);white-space:nowrap}
+.hbar{display:flex;height:16px;border-radius:5px;overflow:hidden;background:var(--surface-2)}
+.hbar span{display:block;height:100%}
+.acttable{width:100%;min-width:0;border-collapse:collapse;font-size:13.5px}
+.acttable th,.acttable td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;background:none}
+.acttable th:first-child,.acttable td:first-child{text-align:left}
+.acttable td .mb{display:inline-block;height:8px;border-radius:4px;background:var(--brand);vertical-align:middle;margin-left:6px}
+.cols{display:flex;align-items:flex-end;gap:6px;height:170px;padding-top:18px;overflow-x:auto}
+.col{flex:1 0 28px;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.col .stack{width:100%;max-width:38px;display:flex;flex-direction:column-reverse;border-radius:5px 5px 0 0;overflow:hidden}
+.col .n{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.col .d{font-size:11px;color:var(--ink-3);white-space:nowrap}
+.empty-ch{color:var(--ink-3);font-size:13.5px;padding:10px 0}
+@media (max-width:640px){.hrow{grid-template-columns:100px 1fr 56px}}
 </style>
 </head>
 <body>
@@ -219,6 +250,26 @@ form.log textarea{min-height:70px;resize:vertical}
 
   <div id="banners"></div>
 
+  <nav class="tabs" id="tabs" hidden>
+    <button type="button" class="tab" id="tabLlamados" aria-pressed="true">Llamados</button>
+    <button type="button" class="tab" id="tabAvance" aria-pressed="false">Avance del equipo</button>
+  </nav>
+
+  <section id="adminView" hidden aria-label="Avance del equipo">
+    <div class="kpis" id="kpis"></div>
+    <div class="grid2">
+      <div class="card"><h3>Avance por ejecutivo</h3><p class="muted cap">Estado de gestión de las cuentas asignadas a cada ejecutivo de Engagement.</p><div id="chEjec"></div><div class="legend" id="chEjecLegend"></div></div>
+      <div class="card"><h3>Actividad por ejecutivo</h3><p class="muted cap">Llamados registrados por cada persona y cuántos fueron atendidos.</p><div id="chAct"></div></div>
+    </div>
+    <div class="card"><h3>Llamados por día</h3><p class="muted cap">Últimos 14 días. Naranja: atendidos. Gris: no atendidos, buzón o número erróneo.</p><div id="chDias"></div></div>
+    <div class="grid2">
+      <div class="card"><h3>Propuestas aceptadas</h3><div id="chProp"></div></div>
+      <div class="card"><h3>Motivos de baja</h3><div id="chMot"></div></div>
+    </div>
+  </section>
+
+  <div id="callView">
+
   <section class="strip-card" aria-label="Avance de la campaña">
     <div class="strip-head">
       <div class="strip-total" id="total">–<small>cuentas en la vista</small></div>
@@ -235,6 +286,8 @@ form.log textarea{min-height:70px;resize:vertical}
     <label>Ordenar por
       <select id="fSort">
         <option value="recent">Vendió más recientemente</option>
+        <option value="login">Login más reciente</option>
+        <option value="sinlogin">Más días sin login</option>
         <option value="ventas">Más ventas</option>
         <option value="proximo">Próximo llamado</option>
         <option value="intentos">Menos intentos</option>
@@ -250,14 +303,15 @@ form.log textarea{min-height:70px;resize:vertical}
     <div class="tscroll">
       <table>
         <thead><tr>
-          <th>Cuenta</th><th>Ejecutivo</th><th>Plan</th><th class="num">Ventas</th><th>Última venta</th><th>Gestión</th><th class="num">Intentos</th><th>Próximo llamado</th>
+          <th>Cuenta</th><th>Ejecutivo</th><th>Plan</th><th class="num">Ventas</th><th>Última venta</th><th>Último login</th><th>Gestión</th><th class="num">Intentos</th><th>Próximo llamado</th>
         </tr></thead>
         <tbody id="tbody">
-          <tr><td colspan="8"><div class="skeleton" style="width:60%"></div></td></tr>
-          <tr><td colspan="8"><div class="skeleton" style="width:45%"></div></td></tr>
+          <tr><td colspan="9"><div class="skeleton" style="width:60%"></div></td></tr>
+          <tr><td colspan="9"><div class="skeleton" style="width:45%"></div></td></tr>
         </tbody>
       </table>
     </div>
+  </div>
   </div>
 </div>
 </div>
@@ -372,16 +426,18 @@ async function onSession(session){
   $("loginView").hidden=true;$("appView").hidden=false;
   $("whoMe").textContent=row.nombre||email;
   $("btnEquipo").hidden=row.rol!=="lider";
+  $("tabs").hidden=row.rol!=="lider";
   if(!started){started=true;start()}
 }
 sb.auth.onAuthStateChange((_e,session)=>{setTimeout(()=>onSession(session),0)});
 
 /* ---------- Data ---------- */
 function mapCuenta(c){
-  const last=toD(c.ultima_venta);
+  const last=toD(c.ultima_venta), login=toD(c.ultimo_login);
   return {id:c.deal_id,name:c.nombre||"(sin nombre)",accountId:c.account_id||"",plan:c.plan||"",amount:c.monto,
     close:toD(c.fecha_alta),ventas:c.ventas,lastSale:last,daysNoSale:daysSince(last),ejecId:c.ejecutivo_id||"",
-    ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",dash:c.link_dash||"",estadoDate:toD(c.fecha_estado),lastOkCall:toD(c.ultimo_llamado_exitoso)};
+    ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",lastLogin:login,daysNoLogin:daysSince(login),
+    dash:c.link_dash||(/^\d+$/.test(c.account_id||"")?`https://dash.fu.do/accounts/${c.account_id}`:""),estadoDate:toD(c.fecha_estado),lastOkCall:toD(c.ultimo_llamado_exitoso)};
 }
 async function loadCuentas(){
   const all=[]; let from=0;
@@ -407,7 +463,7 @@ async function loadSyncInfo(){
 function start(){
   loadCuentas(); loadGestion(); loadSyncInfo();
   sb.channel("gestiones").on("postgres_changes",{event:"*",schema:"public",table:"gestiones"},p=>{
-    const r=p.new&&p.new.deal_id?p.new:null; if(r){gestion[r.deal_id]=r;render();if(selected&&selected.id===r.deal_id)renderDrawerHeaderBits()}
+    const r=p.new&&p.new.deal_id?p.new:null; if(r){gestion[r.deal_id]=r;render();if(selected&&selected.id===r.deal_id)renderDrawerHeaderBits();if(vista==="avance"){clearTimeout(window.__ra);window.__ra=setTimeout(renderAdmin,800)}}
   }).subscribe();
   let t=null;
   sb.channel("cuentas").on("postgres_changes",{event:"*",schema:"public",table:"cuentas"},()=>{clearTimeout(t);t=setTimeout(()=>{loadCuentas();loadSyncInfo()},1500)}).subscribe();
@@ -431,6 +487,8 @@ function sortList(list){
   const by={
     recent:(a,b)=>(b.lastSale?b.lastSale.getTime():0)-(a.lastSale?a.lastSale.getTime():0),
     ventas:(a,b)=>(b.ventas||0)-(a.ventas||0),
+    login:(a,b)=>(b.lastLogin?b.lastLogin.getTime():0)-(a.lastLogin?a.lastLogin.getTime():0),
+    sinlogin:(a,b)=>(a.lastLogin?a.lastLogin.getTime():0)-(b.lastLogin?b.lastLogin.getTime():0),
     proximo:(a,b)=>String(g(a.id).proximo_llamado||"9999").localeCompare(String(g(b.id).proximo_llamado||"9999")),
     intentos:(a,b)=>(g(a.id).intentos||0)-(g(b.id).intentos||0),
     nombre:(a,b)=>a.name.localeCompare(b.name,"es")
@@ -450,17 +508,19 @@ function render(){
   let list=filtroEstado?base.filter(d=>estadoDe(d.id)===filtroEstado):base;
   list=sortList(list);
   const tb=$("tbody");
-  if(!deals.length){tb.innerHTML=`<tr><td colspan="8" class="empty">No hay cuentas cargadas. Tocá «Actualizar desde HubSpot» para traerlas.</td></tr>`;return}
-  if(!list.length){tb.innerHTML=`<tr><td colspan="8" class="empty">Ninguna cuenta coincide con estos filtros.</td></tr>`;return}
+  if(!deals.length){tb.innerHTML=`<tr><td colspan="9" class="empty">No hay cuentas cargadas. Tocá «Actualizar desde HubSpot» para traerlas.</td></tr>`;return}
+  if(!list.length){tb.innerHTML=`<tr><td colspan="9" class="empty">Ninguna cuenta coincide con estos filtros.</td></tr>`;return}
   tb.innerHTML=list.map(d=>{
     const g=gestion[d.id]||{}, e=estadoDe(d.id), ds=d.daysNoSale;
     const dcls=ds==null?"muted":ds<=30?"days-hot":ds>90?"days-cold":"";
+    const dl=d.daysNoLogin, lcls=dl==null?"muted":dl<=7?"days-hot":dl>30?"days-cold":"";
     return `<tr data-id="${esc(d.id)}" class="${selected&&selected.id===d.id?"sel":""}" tabindex="0">
       <td><div class="acc-name">${esc(d.name)}</div><div class="acc-id">ID ${esc(d.accountId||"–")}</div></td>
       <td>${esc(d.ejec)}</td>
       <td class="muted">${esc(d.plan||"–")}</td>
       <td class="num">${fmtN(d.ventas)}</td>
       <td>${fmtD(d.lastSale)} <span class="${dcls}">${ds==null?"":`hace ${ds} d`}</span></td>
+      <td>${fmtD(d.lastLogin)} <span class="${lcls}">${dl==null?"":`hace ${dl} d`}</span></td>
       <td><span class="badge"><span class="dot" style="background:${ESTADOS[e].color}"></span>${esc(ESTADOS[e].label)}</span></td>
       <td class="num">${g.intentos||0}</td>
       <td>${g.proximo_llamado?fmtD(dLocal(g.proximo_llamado)):"–"}</td></tr>`;
@@ -502,6 +562,8 @@ function openDrawer(d){
       <div class="fact"><div class="k">Cantidad de ventas</div><div class="v">${fmtN(d.ventas)}</div></div>
       <div class="fact"><div class="k">Última venta</div><div class="v">${fmtD(d.lastSale)}</div></div>
       <div class="fact"><div class="k">Días sin vender</div><div class="v">${d.daysNoSale==null?"–":d.daysNoSale}</div></div>
+      <div class="fact"><div class="k">Último login</div><div class="v">${fmtD(d.lastLogin)}</div></div>
+      <div class="fact"><div class="k">Días sin login</div><div class="v">${d.daysNoLogin==null?"–":d.daysNoLogin}</div></div>
       <div class="fact"><div class="k">Monto del negocio</div><div class="v small">${d.amount==null?"–":"$ "+fmtN(d.amount)}</div></div>
       <div class="fact"><div class="k">Cliente desde</div><div class="v">${fmtD(d.close)}</div></div>
       <div class="fact"><div class="k">Cambio de estado en Dash</div><div class="v">${fmtD(d.estadoDate)}</div></div>
@@ -510,7 +572,7 @@ function openDrawer(d){
     </div>
     <div class="links">
       <a href="${hubspotUrl}" target="_blank" rel="noopener">Abrir en HubSpot</a>
-      ${dashUrl?`<a href="${esc(dashUrl)}" target="_blank" rel="noopener">Abrir en Dash</a>`:""}
+      ${dashUrl?`<a href="${esc(dashUrl)}" target="_blank" rel="noopener">Abrir en Dash</a>`:`<span class="muted" style="font-size:13.5px;align-self:center">Sin ID de cuenta para abrir Dash</span>`}
     </div>
     <h3>Contactos</h3>
     <div id="contacts"><div class="skeleton" style="width:70%;margin:8px 0"></div></div>
@@ -630,6 +692,77 @@ async function loadContacts(d){
   }));
 }
 
+/* ---------- Avance del equipo (solo líderes) ---------- */
+let vista="llamados";
+function setVista(v){
+  vista=v; $("tabLlamados").setAttribute("aria-pressed",v==="llamados"); $("tabAvance").setAttribute("aria-pressed",v==="avance");
+  $("callView").hidden=v!=="llamados"; $("adminView").hidden=v!=="avance";
+  if(v==="avance") renderAdmin();
+}
+$("tabLlamados").onclick=()=>setVista("llamados");
+$("tabAvance").onclick=()=>setVista("avance");
+async function loadAllLlamados(){
+  const all=[]; let from=0;
+  for(;;){
+    const {data,error}=await sb.from("llamados").select("deal_id,fecha,resultado,respuesta,propuesta,motivo,solicita_baja,estado,por_email,por_nombre").order("fecha",{ascending:false}).range(from,from+999);
+    if(error) throw error; all.push(...data); if(data.length<1000) break; from+=1000;
+  }
+  return all;
+}
+const pct=(a,b)=>b?Math.round(a/b*100):0;
+function hbars(el,items,color){
+  const max=Math.max(1,...items.map(i=>i.n));
+  el.innerHTML=items.length?items.map(i=>`<div class="hrow"><div class="nm" title="${esc(i.label)}">${esc(i.label)}</div>
+    <div class="hbar"><span style="width:${i.n/max*100}%;background:${color}"></span></div><div class="val">${fmtN(i.n)}</div></div>`).join(""):`<div class="empty-ch">Todavía no hay datos.</div>`;
+}
+async function renderAdmin(){
+  if(meRow.rol!=="lider") return;
+  $("kpis").innerHTML=`<div class="kpi"><div class="k">Cargando…</div></div>`;
+  let ll=[];
+  try{ ll=await loadAllLlamados() }catch(e){ $("kpis").innerHTML=`<div class="kpi"><div class="k">No se pudieron leer los llamados</div><div class="s">${esc(e.message)}</div></div>`; return }
+  const ids=new Set(deals.map(d=>d.id)); const llC=ll.filter(l=>ids.has(l.deal_id));
+  const total=deals.length, est={}; Object.keys(ESTADOS).forEach(k=>est[k]=0); deals.forEach(d=>est[estadoDe(d.id)]++);
+  const gest=total-est.pendiente, atend=llC.filter(l=>l.resultado==="Atendió").length;
+  const cuentasContactadas=new Set(llC.filter(l=>l.resultado==="Atendió").map(l=>l.deal_id)).size;
+  const k=(t,v,s)=>`<div class="kpi"><div class="k">${t}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:""}</div>`;
+  $("kpis").innerHTML=k("Cuentas en campaña",fmtN(total))+k("Gestionadas",pct(gest,total)+"%",fmtN(gest)+" cuentas")+
+    k("Contactadas",fmtN(cuentasContactadas),pct(cuentasContactadas,total)+"% de las cuentas")+k("Llamados",fmtN(llC.length),"Tasa de atención "+pct(atend,llC.length)+"%")+
+    k("Aceptan propuesta",fmtN(est.acepta),fmtN(est.regularizo)+" ya regularizaron")+k("Solicitan baja",fmtN(est.solicita_baja));
+
+  // Avance por ejecutivo (dueño de la cuenta)
+  const byE={}; deals.forEach(d=>{const e=d.ejec;(byE[e]=byE[e]||{total:0,est:{}}).total++;const s=estadoDe(d.id);byE[e].est[s]=(byE[e].est[s]||0)+1});
+  const orden=Object.keys(ESTADOS).filter(s=>s!=="pendiente").concat("pendiente");
+  const filas=Object.entries(byE).sort((a,b)=>b[1].total-a[1].total);
+  $("chEjec").innerHTML=filas.map(([n,v])=>{const g=v.total-(v.est.pendiente||0);
+    return `<div class="hrow"><div class="nm" title="${esc(n)}">${esc(n)}</div>
+    <div class="hbar">${orden.map(s=>v.est[s]?`<span title="${esc(ESTADOS[s].label)}: ${v.est[s]}" style="width:${v.est[s]/v.total*100}%;background:${ESTADOS[s].color}"></span>`:"").join("")}</div>
+    <div class="val">${pct(g,v.total)}% de ${v.total}</div></div>`}).join("");
+  $("chEjecLegend").innerHTML=orden.map(s=>`<span class="chip" style="cursor:default"><span class="dot" style="background:${ESTADOS[s].color}"></span>${esc(ESTADOS[s].label)}</span>`).join("");
+
+  // Actividad por persona que llamó
+  const byP={}; llC.forEach(l=>{const n=l.por_nombre||l.por_email;const o=byP[n]=byP[n]||{ll:0,at:0,cu:new Set(),ac:0,ba:0};o.ll++;if(l.resultado==="Atendió")o.at++;o.cu.add(l.deal_id);if(l.respuesta==="Acepta")o.ac++;if(l.solicita_baja)o.ba++});
+  const act=Object.entries(byP).sort((a,b)=>b[1].ll-a[1].ll), maxL=Math.max(1,...act.map(a=>a[1].ll));
+  $("chAct").innerHTML=act.length?`<div class="tscroll"><table class="acttable"><thead><tr><th>Persona</th><th>Llamados</th><th>Cuentas</th><th>Atendidos</th><th>Aceptan</th><th>Bajas</th></tr></thead><tbody>${
+    act.map(([n,o])=>`<tr><td>${esc(n)}</td><td>${fmtN(o.ll)}<span class="mb" style="width:${Math.max(4,o.ll/maxL*60)}px"></span></td><td>${fmtN(o.cu.size)}</td><td>${fmtN(o.at)} <span class="muted">(${pct(o.at,o.ll)}%)</span></td><td>${fmtN(o.ac)}</td><td>${fmtN(o.ba)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty-ch">Todavía no hay llamados registrados.</div>`;
+
+  // Llamados por día, últimos 14 días
+  const dias=[]; for(let i=13;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);dias.push(d)}
+  const key=d=>d.toLocaleDateString("en-CA");
+  const cnt={}; llC.forEach(l=>{const kk=key(new Date(l.fecha));const o=cnt[kk]=cnt[kk]||{at:0,no:0};l.resultado==="Atendió"?o.at++:o.no++});
+  const maxD=Math.max(1,...dias.map(d=>{const o=cnt[key(d)];return o?o.at+o.no:0}));
+  $("chDias").innerHTML=`<div class="cols">${dias.map(d=>{const o=cnt[key(d)]||{at:0,no:0},t=o.at+o.no,h=140;
+    return `<div class="col" title="${fmtD(d)}: ${t} llamados, ${o.at} atendidos"><div class="n">${t||""}</div>
+      <div class="stack" style="height:${t/maxD*h}px"><span style="height:${t?o.at/t*100:0}%;background:var(--brand)"></span><span style="height:${t?o.no/t*100:0}%;background:var(--s-pend)"></span></div>
+      <div class="d">${d.toLocaleDateString("es-AR",{day:"2-digit",month:"2-digit"})}</div></div>`}).join("")}</div>`;
+
+  // Propuestas aceptadas y motivos de baja (último estado de cada cuenta)
+  const gs=deals.map(d=>gestion[d.id]).filter(Boolean);
+  const prop={}; gs.filter(g=>g.estado==="acepta"&&g.propuesta).forEach(g=>prop[g.propuesta]=(prop[g.propuesta]||0)+1);
+  hbars($("chProp"),PROPUESTAS.map(p=>({label:p,n:prop[p]||0})),"var(--s-acep)");
+  const mot={}; gs.filter(g=>g.solicita_baja&&g.motivo).forEach(g=>mot[g.motivo]=(mot[g.motivo]||0)+1);
+  hbars($("chMot"),Object.entries(mot).sort((a,b)=>b[1]-a[1]).map(([l,n])=>({label:l,n})),"var(--s-rech)");
+}
+
 /* ---------- Sync manual, export, equipo ---------- */
 $("btnRefresh").onclick=async()=>{
   const b=$("btnRefresh"); b.disabled=true; b.textContent="Actualizando…";
@@ -641,9 +774,9 @@ $("btnRefresh").onclick=async()=>{
 ["fEjec","fSort"].forEach(id=>$(id).addEventListener("change",render));
 $("fQ").addEventListener("input",render);
 $("btnExport").onclick=()=>{
-  const cols=["Cuenta","ID cuenta","Ejecutivo","Plan","Ventas","Última venta","Días sin vender","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Próximo llamado"];
+  const cols=["Cuenta","ID cuenta","Ejecutivo","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Próximo llamado"];
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.proximo_llamado]});
+  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.proximo_llamado]});
   const csv="\uFEFF"+[cols,...rows].map(r=>r.map(q).join(";")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="gestion-bloqueadas-activas.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 };
