@@ -270,6 +270,7 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
 .sus.act{background:#1C9A6B;color:#fff;margin-right:6px}
 .sus-wrap{display:flex;flex-wrap:wrap;gap:6px}
 .sus-wrap .sus{margin-top:8px}
+.row2[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -454,6 +455,8 @@ const RESULTADOS = ["Atendió","No atendió","Buzón de voz","Número equivocado
 const RESPUESTAS = ["Acepta","Lo va a pensar","Rechaza","Ya regularizó"];
 // Propuestas comerciales de la campaña y motivos de baja (propiedad «CS | Motivo Baja SaaS» de HubSpot)
 const PROPUESTAS = ["30%OFF x 2 meses","50%OFF x 2 meses","50%OFF x 6 meses"];
+// Opciones de «CS | Submotivo Baja SaaS» en HubSpot
+const SUBMOTIVOS = ["El costo es muy alto para las funcionalidades que posee","Ventas: Complejidad de uso","Arqueo: Complejidad de uso","Productos: Complejidad de uso","Gastos: Complejidad de uso","Problemas con impresoras","Problemas de red","Eligió otro sistema por precio","Eligió otro sistema por servicio","No funciona como esperaba","Faltan funcionalidades que necesito","Perdió acceso"];
 const MOTIVOS = ["Cierre definitivo","Cierre temporal","Precio","Servicio","Problemas técnicos","Producto","Cambio dueño","Sistema propio","Desarrollo con IA","Sin respuesta","Otro"];
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -667,7 +670,10 @@ function openDrawer(d){
       <label class="act-box" id="actBox" hidden><input type="checkbox" id="actInm"><span><b>Activación inmediata</b><small>Se carga una fila en la planilla «Bonificación Bloqueados» para que Administración active la cuenta.</small></span></label>
       <div class="field"><label class="lbl" for="prop">Propuesta comercial ofrecida</label><select id="prop"><option value="">Sin propuesta</option>${PROPUESTAS.map(p=>`<option>${esc(p)}</option>`).join("")}</select></div>
       <label class="sync"><input type="checkbox" id="baja"><span><b>El cliente solicita la baja.</b> En HubSpot se marca «Solicita Baja: Sí» y se guarda el motivo en «CS | Motivo Baja SaaS».</span></label>
-      <div class="field" id="motBox" hidden><label class="lbl" for="mot">Motivo de baja</label><select id="mot"><option value="">Elegí el motivo</option>${MOTIVOS.map(p=>`<option>${esc(p)}</option>`).join("")}</select></div>
+      <div class="row2" id="motBox" hidden>
+        <div class="field"><label class="lbl" for="mot">Motivo de baja</label><select id="mot"><option value="">Elegí el motivo</option>${MOTIVOS.map(p=>`<option>${esc(p)}</option>`).join("")}</select></div>
+        <div class="field"><label class="lbl" for="submot">Submotivo de baja</label><select id="submot"><option value="">Sin submotivo</option>${SUBMOTIVOS.map(p=>`<option>${esc(p)}</option>`).join("")}</select></div>
+      </div>
       <div class="row2">
         <div class="field"><label class="lbl" for="tel">Teléfono usado</label><input id="tel" type="text" inputmode="tel" style="width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px" value="${esc(d.tel)}"></div>
         <div class="field"><label class="lbl" for="prox">Volver a llamar el</label><input id="prox" type="date" value="${esc(g.proximo_llamado||"")}"></div>
@@ -686,7 +692,7 @@ function openDrawer(d){
     const show=res==="Atendió"&&resp==="Acepta"&&!$("baja").checked; $("actBox").hidden=!show; if(!show) $("actInm").checked=false};
   form.querySelectorAll('input[name="res"]').forEach(r=>r.onchange=()=>{$("respBox").hidden=r.value!=="Atendió"||!r.checked;syncAct()});
   form.querySelectorAll('input[name="resp"]').forEach(r=>r.addEventListener("change",syncAct));
-  $("baja").onchange=()=>{$("motBox").hidden=!$("baja").checked; if(!$("baja").checked) $("mot").value=""; syncAct()};
+  $("baja").onchange=()=>{$("motBox").hidden=!$("baja").checked; if(!$("baja").checked){$("mot").value="";$("submot").value=""} syncAct()};
   form.onsubmit=ev=>{ev.preventDefault();saveLog(d)};
   loadContacts(d); loadLlamados(d);
 }
@@ -712,7 +718,7 @@ function planLine(l){
 }
 function hsLine(l){
   if(!l.hs_estado||l.hs_estado==="omitido") return "";
-  if(l.hs_estado==="ok"){const p=[l.hs_nota_id&&"nota",l.hs_tarea_id&&"tarea",l.hs_negocio_ok&&"Solicita Baja y motivo en el negocio"].filter(Boolean);
+  if(l.hs_estado==="ok"){const p=[l.hs_nota_id&&"nota",l.hs_tarea_id&&"tarea",l.hs_negocio_ok&&(l.submotivo?"Solicita Baja, motivo y submotivo en el negocio":"Solicita Baja y motivo en el negocio")].filter(Boolean);
     return `<div class="hs ok">Guardado en HubSpot: ${p.join(", ")||"sin cambios"}</div>`}
   if(l.hs_estado==="pendiente"||l.hs_estado==="enviando") return `<div class="hs wait">Enviando a HubSpot…</div>`;
   const mine=l.por_email===(me.email||"").toLowerCase()||meRow.rol==="lider";
@@ -723,7 +729,7 @@ function renderHist(){
   if(!llamadosSel.length){h.innerHTML=`<li class="muted">Todavía no hay llamados registrados para esta cuenta.</li>`;return}
   h.innerHTML=llamadosSel.map(l=>{
     const e=ESTADOS[l.estado]?l.estado:"pendiente";
-    const parts=[l.respuesta,l.propuesta&&("Propuesta: "+l.propuesta),l.activacion_inmediata&&"Activación inmediata",l.solicita_baja&&"Solicita baja",l.motivo&&("Motivo de baja: "+l.motivo)].filter(Boolean);
+    const parts=[l.respuesta,l.propuesta&&("Propuesta: "+l.propuesta),l.activacion_inmediata&&"Activación inmediata",l.solicita_baja&&"Solicita baja",l.motivo&&("Motivo de baja: "+l.motivo),l.submotivo&&("Submotivo: "+l.submotivo)].filter(Boolean);
     return `<li style="--c:${ESTADOS[e].color}">
       <div class="when">${fmtDT(toD(l.fecha))}, intento ${l.intento||"–"}, ${esc(l.por_nombre||l.por_email)}${l.telefono?", "+esc(l.telefono):""}</div>
       <div class="what">${esc(l.resultado)}${parts.length?" – "+esc(parts.join(", ")):""}</div>
@@ -742,13 +748,13 @@ async function saveLog(d){
   const res=(document.querySelector('input[name="res"]:checked')||{}).value;
   if(!res){toast("Elegí el resultado del llamado");return}
   const resp=res==="Atendió"?((document.querySelector('input[name="resp"]:checked')||{}).value||""):"";
-  const baja=$("baja").checked, motivo=baja?$("mot").value:"";
+  const baja=$("baja").checked, motivo=baja?$("mot").value:"", submotivo=baja?$("submot").value:"";
   const act=!$("actBox").hidden&&$("actInm").checked;
   if(baja&&!motivo){toast("Elegí el motivo de baja");$("mot").focus();return}
   saving=true;$("btnSave").disabled=true;
   const enviar=$("syncHs").checked;
   const {data,error}=await sb.rpc("registrar_llamado",{p_deal_id:d.id,p_resultado:res,p_respuesta:resp,p_propuesta:$("prop").value,
-    p_motivo:motivo,p_telefono:$("tel").value.trim(),p_proximo:$("prox").value||null,p_notas:$("notas").value.trim(),p_enviar_hs:enviar,p_solicita_baja:baja,p_activacion:act});
+    p_motivo:motivo,p_telefono:$("tel").value.trim(),p_proximo:$("prox").value||null,p_notas:$("notas").value.trim(),p_enviar_hs:enviar,p_solicita_baja:baja,p_activacion:act,p_submotivo:submotivo||null});
   saving=false; if($("btnSave")) $("btnSave").disabled=false;
   if(error){toast("No se pudo guardar: "+error.message);return}
   toast("Contacto guardado");
@@ -895,9 +901,9 @@ $("btnRefresh").onclick=async()=>{
 ["fEjec","fSort","fSus"].forEach(id=>$(id).addEventListener("change",render));
 $("fQ").addEventListener("input",render);
 $("btnExport").onclick=()=>{
-  const cols=["Cuenta","ID cuenta","Ejecutivo","Suscripción activa","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Próximo llamado"];
+  const cols=["Cuenta","ID cuenta","Ejecutivo","Suscripción activa","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Submotivo de baja","Próximo llamado"];
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,d.sus===true?"Sí":d.sus===false?"No":"",d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.proximo_llamado]});
+  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,d.sus===true?"Sí":d.sus===false?"No":"",d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.submotivo,g.proximo_llamado]});
   const csv="\uFEFF"+[cols,...rows].map(r=>r.map(q).join(";")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="gestion-bloqueadas-activas.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 };
