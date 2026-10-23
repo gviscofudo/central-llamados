@@ -271,6 +271,20 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
 .sus-wrap{display:flex;flex-wrap:wrap;gap:6px}
 .sus-wrap .sus{margin-top:8px}
 .row2[hidden]{display:none}
+
+.tag-sit{display:inline-block;margin-left:6px;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px;vertical-align:middle;background:var(--surface-2);color:var(--ink-2)}
+.tag-sit.desbloq{background:#E8EEFF;color:#2B4FC2}
+.tag-sit.baja{background:#FDECEA;color:#B23B32}
+.sus.sit-desbloq{background:#E8EEFF;color:#2B4FC2}
+.sus.sit-baja{background:#FDECEA;color:#B23B32}
+.sus.sit-otro{background:var(--surface-2);color:var(--ink-2)}
+.res-total{font-size:14px;color:var(--ink-2);margin-bottom:8px}.res-total b{font-size:22px;color:var(--ink)}
+.res-bar{height:22px;margin-bottom:14px}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.res-item{display:flex;gap:8px;align-items:flex-start}
+.res-item .dot{width:10px;height:10px;border-radius:50%;margin-top:7px;flex:none}
+.res-p{font-size:22px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
+.res-l{font-size:13px;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -324,6 +338,9 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
     <label class="pill-select" id="pEjec"><span class="pl">Ejecutivo</span>
       <select id="fEjec"><option value="">Todos</option></select>
     </label>
+    <label class="pill-select" id="pSit"><span class="pl">Situación</span>
+      <select id="fSit"><option value="">Todas</option><option value="bloq">Siguen bloqueadas</option><option value="fuera">Ya no están bloqueadas</option></select>
+    </label>
     <label class="pill-select" id="pSus"><span class="pl">Suscripción</span>
       <select id="fSus"><option value="">Todas</option><option value="si">Activa</option><option value="no">Sin suscripción</option></select>
     </label>
@@ -353,8 +370,9 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
     <div class="kpis" id="kpis"></div>
     <div class="grid2">
       <div class="card"><h3>Avance por ejecutivo</h3><p class="muted cap">Estado de gestión de las cuentas asignadas a cada ejecutivo de Engagement.</p><div id="chEjec"></div><div class="legend" id="chEjecLegend"></div></div>
-      <div class="card"><h3>Actividad por ejecutivo</h3><p class="muted cap">Llamados registrados por cada persona y cuántos fueron atendidos.</p><div id="chAct"></div></div>
+      <div class="card"><h3>Resultado de los llamados</h3><p class="muted cap">Sobre el total de llamados realizados.</p><div id="chRes"></div></div>
     </div>
+    <div class="card"><h3>Actividad por ejecutivo</h3><p class="muted cap">Llamados registrados por cada persona y su resultado, con el porcentaje sobre sus llamados.</p><div id="chAct"></div></div>
     <div class="card"><h3>Llamados por día</h3><p class="muted cap">Últimos 14 días. Naranja: atendidos. Gris: no atendidos, buzón o número erróneo.</p><div id="chDias"></div></div>
     <div class="grid2">
       <div class="card"><h3>Propuestas aceptadas</h3><div id="chProp"></div></div>
@@ -512,7 +530,8 @@ function mapCuenta(c){
   const last=toD(c.ultima_venta), login=toD(c.ultimo_login);
   return {id:c.deal_id,name:c.nombre||"(sin nombre)",accountId:c.account_id||"",plan:c.plan||"",amount:c.monto,
     close:toD(c.fecha_alta),ventas:c.ventas,lastSale:last,daysNoSale:daysSince(last),ejecId:c.ejecutivo_id||"",
-    ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",lastLogin:login,sus:c.suscripcion_activa,daysNoLogin:daysSince(login),
+    ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",lastLogin:login,sus:c.suscripcion_activa,
+    enFiltro:c.en_filtro!==false,estadoDash:c.estado_dash||"",estadoCom:c.estado_comercial||"",bajaHs:!!c.solicita_baja_hs,daysNoLogin:daysSince(login),
     dash:c.link_dash||(/^\d+$/.test(c.account_id||"")?`https://dash.fu.do/accounts/${c.account_id}`:""),estadoDate:toD(c.fecha_estado),lastOkCall:toD(c.ultimo_llamado_exitoso)};
 }
 async function loadCuentas(){
@@ -546,6 +565,13 @@ function start(){
 }
 
 /* ---------- List ---------- */
+// Situación actual en HubSpot de las cuentas gestionadas que ya no cumplen el criterio de la campaña
+function situacion(d){
+  if(d.enFiltro) return null;
+  if(d.bajaHs||d.estadoCom==="Baja") return {k:"baja",label:"Baja en HubSpot"};
+  if(d.estadoDash&&d.estadoDash!=="Bloqueado") return {k:"desbloq",label:d.estadoDash==="Activo"?"Desbloqueada":`Desbloqueada (${d.estadoDash})`};
+  return {k:"otro",label:"Fuera del criterio"+(d.estadoCom?` (${d.estadoCom})`:"")};
+}
 function estadoDe(id){const g=gestion[id];return g&&g.estado&&ESTADOS[g.estado]?g.estado:"pendiente"}
 function fillEjecutivos(){
   const sel=$("fEjec"), cur=sel.value;
@@ -555,8 +581,8 @@ function fillEjecutivos(){
   if(names.includes(cur)) sel.value=cur;
 }
 function baseFiltered(){
-  const e=$("fEjec").value, q=$("fQ").value.trim().toLowerCase(), s=$("fSus").value;
-  return deals.filter(d=>(!e||d.ejec===e)&&(!s||(s==="si"?d.sus===true:d.sus!==true))&&(!q||d.name.toLowerCase().includes(q)||d.accountId.includes(q)));
+  const e=$("fEjec").value, q=$("fQ").value.trim().toLowerCase(), s=$("fSus").value, si=$("fSit").value;
+  return deals.filter(d=>(!e||d.ejec===e)&&(!s||(s==="si"?d.sus===true:d.sus!==true))&&(!si||(si==="bloq"?d.enFiltro:!d.enFiltro))&&(!q||d.name.toLowerCase().includes(q)||d.accountId.includes(q)));
 }
 function sortList(list){
   const s=$("fSort").value, g=id=>gestion[id]||{};
@@ -574,11 +600,12 @@ function sortList(list){
 function updateFilterUI(shown){
   $("pEjec").classList.toggle("on",!!$("fEjec").value);
   $("pSus").classList.toggle("on",!!$("fSus").value);
-  const any=!!($("fEjec").value||$("fSus").value||$("fQ").value.trim()||filtroEstado);
+  $("pSit").classList.toggle("on",!!$("fSit").value);
+  const any=!!($("fEjec").value||$("fSus").value||$("fSit").value||$("fQ").value.trim()||filtroEstado);
   $("fClear").hidden=!any;
   $("fCount").textContent=deals.length?(any?`${fmtN(shown)} de ${fmtN(deals.length)} cuentas`:`${fmtN(deals.length)} cuentas`):"";
 }
-$("fClear").onclick=()=>{$("fEjec").value="";$("fSus").value="";$("fQ").value="";filtroEstado=null;render();$("fQ").focus()};
+$("fClear").onclick=()=>{$("fEjec").value="";$("fSus").value="";$("fSit").value="";$("fQ").value="";filtroEstado=null;render();$("fQ").focus()};
 function render(){
   const base=baseFiltered();
   const counts={}; Object.keys(ESTADOS).forEach(k=>counts[k]=0);
@@ -600,7 +627,7 @@ function render(){
     const dcls=ds==null?"muted":ds<=30?"days-hot":ds>90?"days-cold":"";
     const dl=d.daysNoLogin, lcls=dl==null?"muted":dl<=7?"days-hot":dl>30?"days-cold":"";
     return `<tr data-id="${esc(d.id)}" class="${selected&&selected.id===d.id?"sel":""}" tabindex="0">
-      <td><div class="acc-name">${esc(d.name)}${d.sus===true?`<span class="tag-sus" title="Suscripción activa">Susc. activa</span>`:""}</div><div class="acc-id">ID ${esc(d.accountId||"–")}</div></td>
+      <td><div class="acc-name">${esc(d.name)}${d.sus===true?`<span class="tag-sus" title="Suscripción activa">Susc. activa</span>`:""}${(s=>s?`<span class="tag-sit ${s.k}">${esc(s.label)}</span>`:"")(situacion(d))}</div><div class="acc-id">ID ${esc(d.accountId||"–")}</div></td>
       <td>${esc(d.ejec)}</td>
       <td class="muted">${esc(d.plan||"–")}</td>
       <td class="num">${fmtN(d.ventas)}</td>
@@ -639,7 +666,8 @@ function openDrawer(d){
   $("dTitle").textContent=d.name;
   $("dSub").textContent=`ID de cuenta ${d.accountId||"–"}, ${d.ejec}`;
   const gAct=(gestion[d.id]||{}).activacion_inmediata;
-  $("dSus").innerHTML=(gAct?`<span class="sus act">Activación inmediata solicitada</span> `:"")+(d.sus===true?`<span class="sus si">Suscripción activa</span>`:d.sus===false?`<span class="sus no">Sin suscripción activa</span>`:`<span class="sus nd">Suscripción sin dato</span>`);
+  const sit=situacion(d);
+  $("dSus").innerHTML=(sit?`<span class="sus sit-${sit.k}">${esc(sit.label)}</span> `:"")+(gAct?`<span class="sus act">Activación inmediata solicitada</span> `:"")+(d.sus===true?`<span class="sus si">Suscripción activa</span>`:d.sus===false?`<span class="sus no">Sin suscripción activa</span>`:`<span class="sus nd">Suscripción sin dato</span>`);
   const hubspotUrl=`https://app.hubspot.com/contacts/${HS_PORTAL}/record/0-3/${encodeURIComponent(d.id)}`;
   const dashUrl=/^https?:\/\//.test(d.dash)?d.dash:"";
   const opt=(name,vals)=>vals.map((v,i)=>`<input type="radio" name="${name}" id="${name}${i}" value="${esc(v)}"><label for="${name}${i}">${esc(v)}</label>`).join("");
@@ -850,10 +878,11 @@ async function renderAdmin(){
   // Bajas generadas por la campaña: todo el historial, incluidas las cuentas que ya salieron de la lista
   const bajaPorCuenta=new Map(); ll.filter(l=>l.solicita_baja).forEach(l=>{if(!bajaPorCuenta.has(l.deal_id))bajaPorCuenta.set(l.deal_id,l)});
   const bajasCampana=bajaPorCuenta.size;
+  const desbloq=base.filter(d=>{const s=situacion(d);return s&&s.k==="desbloq"}).length;
   const k=(t,v,s)=>`<div class="kpi"><div class="k">${t}</div><div class="v">${v}</div>${s?`<div class="s">${s}</div>`:""}</div>`;
   $("kpis").innerHTML=k("Cuentas en campaña",fmtN(total))+k("Gestionadas",pct(gest,total)+"%",fmtN(gest)+" cuentas")+
     k("Contactadas",fmtN(cuentasContactadas),pct(cuentasContactadas,total)+"% de las cuentas")+k("Llamados",fmtN(llC.length),"Tasa de atención "+pct(atend,llC.length)+"%")+
-    k("Aceptan propuesta",fmtN(est.acepta),fmtN(est.regularizo)+" ya regularizaron")+k("Bajas generadas por la campaña",fmtN(bajasCampana),"Total de la campaña");
+    k("Aceptan propuesta",fmtN(est.acepta),fmtN(est.regularizo)+" ya regularizaron")+k("Desbloqueadas",fmtN(desbloq),"Gestionadas que ya no están bloqueadas")+k("Bajas generadas por la campaña",fmtN(bajasCampana),"Total de la campaña");
 
   // Avance por ejecutivo (dueño de la cuenta)
   const byE={}; base.forEach(d=>{const e=d.ejec;(byE[e]=byE[e]||{total:0,est:{}}).total++;const s=estadoDe(d.id);byE[e].est[s]=(byE[e].est[s]||0)+1});
@@ -865,12 +894,24 @@ async function renderAdmin(){
     <div class="val">${pct(g,v.total)}% de ${v.total}</div></div>`}).join("");
   $("chEjecLegend").innerHTML=orden.map(s=>`<span class="chip" style="cursor:default"><span class="dot" style="background:${ESTADOS[s].color}"></span>${esc(ESTADOS[s].label)}</span>`).join("");
 
+  // Resultado de cada llamado, agrupado
+  const RES=[{k:"nr",label:"No responden",color:"var(--s-sin)",est:["sin_respuesta","numero_erroneo"]},{k:"ac",label:"Aceptan",color:"var(--s-acep)",est:["acepta"]},
+    {k:"re",label:"Rechazan",color:"var(--s-rech)",est:["rechaza"]},{k:"se",label:"En seguimiento",color:"var(--s-seg)",est:["seguimiento"]},
+    {k:"ba",label:"Bajas",color:"#8E2A24",est:["solicita_baja"]},{k:"rg",label:"Ya regularizó",color:"var(--s-reg)",est:["regularizo"]}];
+  const grupo=e=>(RES.find(r=>r.est.includes(e))||{}).k;
+  const resCnt={}; RES.forEach(r=>resCnt[r.k]=0); llC.forEach(l=>{const g=grupo(l.estado);if(g)resCnt[g]++});
+  const T=llC.length;
+  $("chRes").innerHTML=T?`<div class="res-total"><b>${fmtN(T)}</b> llamados realizados</div>
+    <div class="hbar res-bar">${RES.map(r=>resCnt[r.k]?`<span title="${esc(r.label)}: ${resCnt[r.k]}" style="width:${resCnt[r.k]/T*100}%;background:${r.color}"></span>`:"").join("")}</div>
+    <div class="res-grid">${RES.filter(r=>r.k!=="rg"||resCnt.rg).map(r=>`<div class="res-item"><span class="dot" style="background:${r.color}"></span><div><div class="res-p">${pct(resCnt[r.k],T)}%</div><div class="res-l">${esc(r.label)} <span class="muted">(${fmtN(resCnt[r.k])})</span></div></div></div>`).join("")}</div>`
+    :`<div class="empty-ch">Todavía no hay llamados registrados.</div>`;
+
   // Actividad por persona que llamó
-  const byP={}; llC.forEach(l=>{const n=l.por_nombre||l.por_email;const o=byP[n]=byP[n]||{ll:0,at:0,cu:new Set(),ac:0,ba:0};o.ll++;if(l.resultado==="Atendió")o.at++;o.cu.add(l.deal_id);if(l.respuesta==="Acepta")o.ac++});
-  ll.filter(l=>l.solicita_baja&&bajaPorCuenta.get(l.deal_id)===l).forEach(l=>{const n=l.por_nombre||l.por_email;const o=byP[n]=byP[n]||{ll:0,at:0,cu:new Set(),ac:0,ba:0};o.ba++});
+  const byP={}; llC.forEach(l=>{const n=l.por_nombre||l.por_email;const o=byP[n]=byP[n]||{ll:0,cu:new Set(),g:{}};o.ll++;o.cu.add(l.deal_id);const g=grupo(l.estado);if(g)o.g[g]=(o.g[g]||0)+1});
   const act=Object.entries(byP).sort((a,b)=>b[1].ll-a[1].ll), maxL=Math.max(1,...act.map(a=>a[1].ll));
-  $("chAct").innerHTML=act.length?`<div class="tscroll"><table class="acttable"><thead><tr><th>Persona</th><th>Llamados</th><th>Cuentas</th><th>Atendidos</th><th>Aceptan</th><th>Bajas</th></tr></thead><tbody>${
-    act.map(([n,o])=>`<tr><td>${esc(n)}</td><td>${fmtN(o.ll)}<span class="mb" style="width:${Math.max(4,o.ll/maxL*60)}px"></span></td><td>${fmtN(o.cu.size)}</td><td>${fmtN(o.at)} <span class="muted">(${pct(o.at,o.ll)}%)</span></td><td>${fmtN(o.ac)}</td><td>${fmtN(o.ba)}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty-ch">Todavía no hay llamados registrados.</div>`;
+  const cel=(n,t)=>`<td>${fmtN(n||0)} <span class="muted">(${pct(n||0,t)}%)</span></td>`;
+  $("chAct").innerHTML=act.length?`<div class="tscroll"><table class="acttable"><thead><tr><th>Persona</th><th>Llamados</th><th>Cuentas</th><th>No responden</th><th>Aceptan</th><th>Rechazan</th><th>En seguimiento</th><th>Bajas</th></tr></thead><tbody>${
+    act.map(([n,o])=>`<tr><td>${esc(n)}</td><td>${fmtN(o.ll)}<span class="mb" style="width:${Math.max(4,o.ll/maxL*60)}px"></span></td><td>${fmtN(o.cu.size)}</td>${cel(o.g.nr,o.ll)}${cel(o.g.ac,o.ll)}${cel(o.g.re,o.ll)}${cel(o.g.se,o.ll)}${cel(o.g.ba,o.ll)}</tr>`).join("")}</tbody></table></div>`:`<div class="empty-ch">Todavía no hay llamados registrados.</div>`;
 
   // Llamados por día, últimos 14 días
   const dias=[]; for(let i=13;i>=0;i--){const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);dias.push(d)}
@@ -898,12 +939,12 @@ $("btnRefresh").onclick=async()=>{
   if(error){const m=await fnError(error);banner("No se pudo actualizar desde HubSpot: "+esc(m),"err");return}
   banner(""); toast(`${fmtN(data.cuentas)} cuentas actualizadas`); loadCuentas(); loadSyncInfo();
 };
-["fEjec","fSort","fSus"].forEach(id=>$(id).addEventListener("change",render));
+["fEjec","fSort","fSus","fSit"].forEach(id=>$(id).addEventListener("change",render));
 $("fQ").addEventListener("input",render);
 $("btnExport").onclick=()=>{
-  const cols=["Cuenta","ID cuenta","Ejecutivo","Suscripción activa","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Submotivo de baja","Próximo llamado"];
+  const cols=["Cuenta","ID cuenta","Ejecutivo","Situación actual","Suscripción activa","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Submotivo de baja","Próximo llamado"];
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,d.sus===true?"Sí":d.sus===false?"No":"",d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.submotivo,g.proximo_llamado]});
+  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,(situacion(d)||{label:"Bloqueada"}).label,d.sus===true?"Sí":d.sus===false?"No":"",d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.submotivo,g.proximo_llamado]});
   const csv="\uFEFF"+[cols,...rows].map(r=>r.map(q).join(";")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="gestion-bloqueadas-activas.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 };
