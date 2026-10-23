@@ -285,6 +285,8 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
 .res-item .dot{width:10px;height:10px;border-radius:50%;margin-top:7px;flex:none}
 .res-p{font-size:22px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums}
 .res-l{font-size:13px;color:var(--ink-2)}
+
+.ic-no{display:block;font-size:11.5px;color:var(--s-sin);font-weight:600}
 </style>
 </head>
 <body>
@@ -349,6 +351,8 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
         <option value="recent">Vendió más recientemente</option>
         <option value="login">Login más reciente</option>
         <option value="sinlogin">Más días sin login</option>
+        <option value="icrec">Llamado más reciente</option>
+        <option value="icold">Más tiempo sin llamar</option>
         <option value="ventas">Más ventas</option>
         <option value="proximo">Próximo llamado</option>
         <option value="intentos">Menos intentos</option>
@@ -395,11 +399,11 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
     <div class="tscroll">
       <table>
         <thead><tr>
-          <th>Cuenta</th><th>Ejecutivo</th><th>Plan</th><th class="num">Ventas</th><th>Última venta</th><th>Último login</th><th>Gestión</th><th class="num">Intentos</th><th>Próximo llamado</th>
+          <th>Cuenta</th><th>Ejecutivo</th><th>Plan</th><th class="num">Ventas</th><th>Última venta</th><th>Último login</th><th>Gestión</th><th class="num">Intentos</th><th>Último llamado</th><th>Próximo llamado</th>
         </tr></thead>
         <tbody id="tbody">
-          <tr><td colspan="9"><div class="skeleton" style="width:60%"></div></td></tr>
-          <tr><td colspan="9"><div class="skeleton" style="width:45%"></div></td></tr>
+          <tr><td colspan="10"><div class="skeleton" style="width:60%"></div></td></tr>
+          <tr><td colspan="10"><div class="skeleton" style="width:45%"></div></td></tr>
         </tbody>
       </table>
     </div>
@@ -531,6 +535,7 @@ function mapCuenta(c){
   return {id:c.deal_id,name:c.nombre||"(sin nombre)",accountId:c.account_id||"",plan:c.plan||"",amount:c.monto,
     close:toD(c.fecha_alta),ventas:c.ventas,lastSale:last,daysNoSale:daysSince(last),ejecId:c.ejecutivo_id||"",
     ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",lastLogin:login,sus:c.suscripcion_activa,
+    icLast:toD(c.ic_ultimo_llamado),icAtendido:c.ic_ultimo_atendido,icPor:c.ic_ultimo_por||"",
     enFiltro:c.en_filtro!==false,estadoDash:c.estado_dash||"",estadoCom:c.estado_comercial||"",bajaHs:!!c.solicita_baja_hs,daysNoLogin:daysSince(login),
     dash:c.link_dash||(/^\d+$/.test(c.account_id||"")?`https://dash.fu.do/accounts/${c.account_id}`:""),estadoDate:toD(c.fecha_estado),lastOkCall:toD(c.ultimo_llamado_exitoso)};
 }
@@ -589,6 +594,8 @@ function sortList(list){
   const by={
     recent:(a,b)=>(b.lastSale?b.lastSale.getTime():0)-(a.lastSale?a.lastSale.getTime():0),
     ventas:(a,b)=>(b.ventas||0)-(a.ventas||0),
+    icrec:(a,b)=>(b.icLast?b.icLast.getTime():0)-(a.icLast?a.icLast.getTime():0),
+    icold:(a,b)=>(a.icLast?a.icLast.getTime():0)-(b.icLast?b.icLast.getTime():0),
     login:(a,b)=>(b.lastLogin?b.lastLogin.getTime():0)-(a.lastLogin?a.lastLogin.getTime():0),
     sinlogin:(a,b)=>(a.lastLogin?a.lastLogin.getTime():0)-(b.lastLogin?b.lastLogin.getTime():0),
     proximo:(a,b)=>String(g(a.id).proximo_llamado||"9999").localeCompare(String(g(b.id).proximo_llamado||"9999")),
@@ -620,8 +627,8 @@ function render(){
   list=sortList(list); updateFilterUI(list.length);
   if(vista==="avance"){clearTimeout(window.__ra);window.__ra=setTimeout(renderAdmin,300)}
   const tb=$("tbody");
-  if(!deals.length){tb.innerHTML=`<tr><td colspan="9" class="empty">No hay cuentas cargadas. Tocá «Actualizar desde HubSpot» para traerlas.</td></tr>`;return}
-  if(!list.length){tb.innerHTML=`<tr><td colspan="9" class="empty">Ninguna cuenta coincide con estos filtros.</td></tr>`;return}
+  if(!deals.length){tb.innerHTML=`<tr><td colspan="10" class="empty">No hay cuentas cargadas. Tocá «Actualizar desde HubSpot» para traerlas.</td></tr>`;return}
+  if(!list.length){tb.innerHTML=`<tr><td colspan="10" class="empty">Ninguna cuenta coincide con estos filtros.</td></tr>`;return}
   tb.innerHTML=list.map(d=>{
     const g=gestion[d.id]||{}, e=estadoDe(d.id), ds=d.daysNoSale;
     const dcls=ds==null?"muted":ds<=30?"days-hot":ds>90?"days-cold":"";
@@ -635,6 +642,7 @@ function render(){
       <td>${fmtD(d.lastLogin)} <span class="${lcls}">${dl==null?"":`hace ${dl} d`}</span></td>
       <td><span class="badge"><span class="dot" style="background:${ESTADOS[e].color}"></span>${esc(ESTADOS[e].label)}</span></td>
       <td class="num">${g.intentos||0}</td>
+      <td>${d.icLast?`${fmtD(d.icLast)} <span class="muted">${(dd=>dd===0?"hoy":`hace ${dd} d`)(daysSince(d.icLast))}</span>${d.icAtendido===false?`<span class="ic-no" title="No atendido">no atendió</span>`:""}`:`<span class="muted">Sin llamados</span>`}</td>
       <td>${g.proximo_llamado?fmtD(dLocal(g.proximo_llamado)):"–"}</td></tr>`;
   }).join("");
   tb.querySelectorAll("tr[data-id]").forEach(tr=>{
@@ -682,6 +690,7 @@ function openDrawer(d){
       <div class="fact"><div class="k">Monto del negocio</div><div class="v small">${d.amount==null?"–":"$ "+fmtN(d.amount)}</div></div>
       <div class="fact"><div class="k">Cliente desde</div><div class="v">${fmtD(d.close)}</div></div>
       <div class="fact"><div class="k">Cambio de estado en Dash</div><div class="v">${fmtD(d.estadoDate)}</div></div>
+      <div class="fact"><div class="k">Último llamado (Intercom)</div><div class="v small">${d.icLast?`${fmtDT(d.icLast)}<br><span class="muted">${d.icAtendido?"Atendido":"No atendido"}${d.icPor?`, ${esc(d.icPor)}`:""}</span>`:"Sin llamados"}</div></div>
       <div class="fact"><div class="k">Último llamado exitoso</div><div class="v">${fmtD(d.lastOkCall)}</div></div>
       <div class="fact"><div class="k">Gestión</div><div class="v small" id="dState"></div></div>
     </div>
@@ -942,9 +951,9 @@ $("btnRefresh").onclick=async()=>{
 ["fEjec","fSort","fSus","fSit"].forEach(id=>$(id).addEventListener("change",render));
 $("fQ").addEventListener("input",render);
 $("btnExport").onclick=()=>{
-  const cols=["Cuenta","ID cuenta","Ejecutivo","Situación actual","Suscripción activa","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Submotivo de baja","Próximo llamado"];
+  const cols=["Cuenta","ID cuenta","Ejecutivo","Situación actual","Suscripción activa","Plan","Ventas","Última venta","Días sin vender","Último login","Días sin login","Gestión","Intentos","Último llamado Intercom","Atendido","Llamó","Último intento","Último resultado","Respuesta","Propuesta","Solicita baja","Motivo de baja","Submotivo de baja","Próximo llamado"];
   const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
-  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,(situacion(d)||{label:"Bloqueada"}).label,d.sus===true?"Sí":d.sus===false?"No":"",d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.submotivo,g.proximo_llamado]});
+  const rows=sortList(baseFiltered()).map(d=>{const g=gestion[d.id]||{};return [d.name,d.accountId,d.ejec,(situacion(d)||{label:"Bloqueada"}).label,d.sus===true?"Sí":d.sus===false?"No":"",d.plan,d.ventas,fmtD(d.lastSale),d.daysNoSale,d.lastLogin?fmtD(d.lastLogin):"",d.daysNoLogin,ESTADOS[estadoDe(d.id)].label,g.intentos||0,d.icLast?fmtDT(d.icLast):"",d.icLast?(d.icAtendido?"Sí":"No"):"",d.icPor,g.ultimo_intento?fmtDT(toD(g.ultimo_intento)):"",g.ultimo_resultado,g.respuesta,g.propuesta,g.solicita_baja?"Sí":"",g.motivo,g.submotivo,g.proximo_llamado]});
   const csv="\uFEFF"+[cols,...rows].map(r=>r.map(q).join(";")).join("\r\n");
   const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="gestion-bloqueadas-activas.csv"; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 };
