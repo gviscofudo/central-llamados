@@ -287,6 +287,118 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
 .res-l{font-size:13px;color:var(--ink-2)}
 
 .ic-no{display:block;font-size:11.5px;color:var(--s-sin);font-weight:600}
+
+.hist-admin{display:flex;gap:6px;margin-top:6px}
+.hist-admin button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-size:12.5px;cursor:pointer;font-weight:600}
+.hist-admin button:hover{border-color:var(--ink-3)}
+.hist-admin button.del{color:var(--s-rech)}
+.hist-admin button.del:hover{border-color:var(--s-rech)}
+.edit-form select,.edit-form input[type=text],.edit-form input[type=date],.edit-form textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.edit-form textarea{min-height:70px;resize:vertical}
+.edit-note{font-size:12.5px;margin:4px 0 0}
+#editModal{z-index:40}
+.head-title{min-width:0}
+.back{display:inline-flex;align-items:center;gap:4px;background:transparent;border:0;color:#D6D6DA;font-weight:600;font-size:13px;padding:0;margin-bottom:4px;cursor:pointer}
+.back:hover{color:#fff}
+.back[hidden]{display:none}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.camp-card{display:flex;flex-direction:column;gap:8px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;color:var(--ink);font:inherit}
+.camp-card:hover{border-color:var(--brand);box-shadow:0 6px 20px rgba(0,0,0,.07);transform:translateY(-1px)}
+.camp-card h3{margin:0;font-size:18px;line-height:1.25}
+.cc-top{display:flex;gap:6px;flex-wrap:wrap}
+.cc-est{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--ink-2)}
+.cc-est.curso{background:#E3F5EC;color:#137A53}.cc-est.prog{background:#E8EEFF;color:#2B4FC2}.cc-est.fin{background:var(--surface-2);color:var(--ink-3)}.cc-est.arch{background:#F1F1F3;color:var(--ink-3)}
+.cc-tipo{font-size:11.5px;font-weight:600;color:var(--ink-3);padding:2px 0}
+.cc-desc{margin:0;color:var(--ink-2);font-size:13.5px}
+.cc-per{font-size:13px;color:var(--ink-3)}
+.cc-prog{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink-2)}
+.cc-bar{flex:1;height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}.cc-bar span{display:block;height:100%;background:var(--brand);border-radius:99px}
+.cc-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.cc-nums b{display:block;font-size:18px;font-variant-numeric:tabular-nums}.cc-nums span{font-size:12px;color:var(--ink-3)}
+.cc-ej{font-size:12.5px;color:var(--ink-3)}
+.empty-home{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;background:var(--surface);border:1px dashed var(--line);border-radius:14px;padding:40px 20px;color:var(--ink-2)}
+.ca-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 12px}.ca-head h2{margin:0;font-size:20px}
+.ca-table{width:100%;min-width:900px;border-collapse:collapse}
+.ca-table td{vertical-align:top;cursor:default}
+.ca-table tbody tr{cursor:default}
+.ca-table tbody tr:hover{background:none}
+.ca-acts{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.ca-acts .btn{padding:5px 12px;font-size:13px}
+.seg-desc{max-width:320px;font-size:13px}
+.small{font-size:12.5px}.nowrap{white-space:nowrap}
+.bf-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}.bf-head h3{margin:0;font-size:20px}
+.bf-sec{display:flex;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+.bf-num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--brand);color:var(--brand-ink);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.bf-body{flex:1;min-width:0}.bf-body h4{margin:2px 0 6px;font-size:15.5px}
+.bf-body input[type=text],.bf-body input[type=date],.bf-body input[type=number],.bf-body select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink)}
+.bf-body .field input{width:100%}
+.frow{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(140px,.9fr) minmax(160px,1.3fr) auto;gap:8px;align-items:start;margin-bottom:8px;background:var(--surface-2);border-radius:10px;padding:8px}
+.frow select,.frow input{width:100%}
+.frow select[multiple]{height:auto}
+.fval .inl{display:flex;align-items:center;gap:6px;white-space:nowrap}.fval .inl input{min-width:0}
+.bf-prev{margin-top:12px;padding:12px 14px;border-radius:10px;background:var(--brand-soft);min-height:20px}
+.prev-n{font-size:15px}.prev-n b{font-size:22px}
+.err-t{color:var(--s-rech);font-weight:600}
+.seg-fixed{background:var(--surface-2);border-radius:10px;padding:10px 12px;margin:0 0 6px;font-weight:600;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chip-v{display:inline-flex;align-items:center;gap:4px;background:var(--brand-soft);color:var(--ink);border-radius:999px;padding:4px 6px 4px 12px;font-weight:600;font-size:13.5px}
+.chip-v button{border:0;background:transparent;cursor:pointer;font-size:16px;line-height:1;color:var(--ink-2);padding:0 4px}
+.chip-add{display:flex;gap:8px;max-width:460px}.chip-add input{flex:1;min-width:0}
+.chk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:14px}
+.chk input{accent-color:var(--brand);margin-top:3px}
+.chk small{display:block;color:var(--ink-3);font-size:12px}
+.chk:has(input:checked){border-color:var(--brand);background:var(--brand-soft)}
+.bf-foot{display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:760px){.frow{grid-template-columns:1fr 1fr}.frow .fval{grid-column:1/-1}.frow [data-del]{grid-row:1;grid-column:2;justify-self:end}}
+.pill-select[hidden]{display:none}
+
+.msg-box{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface-2)}
+.msg-opts{display:grid;gap:8px}
+.msg-chk{background:var(--surface)}
+.msg-chk b{font-size:14px}
+.msg-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}
+.msg-foot .btn:disabled{opacity:.45;cursor:not-allowed}
+.msg-hist{list-style:none;margin:10px 0 0;padding:0;font-size:13px}
+.msg-hist:empty{display:none}
+.msg-hist li{display:flex;align-items:center;gap:6px;padding:5px 0;border-top:1px solid var(--line);flex-wrap:wrap}
+.msg-hist .dot{width:8px;height:8px;border-radius:50%;background:var(--s-acep)}
+
+/* Accesos a HubSpot y Dash */
+.links{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.links a.lnk,.lnk{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;text-decoration:none;color:var(--ink);background:var(--surface);font-size:14px;transition:border-color .15s,box-shadow .15s,transform .15s}
+.links a.lnk:hover{border-color:var(--brand);box-shadow:0 4px 14px rgba(242,107,33,.15);transform:translateY(-1px)}
+.lnk b{display:block;font-size:14px}.lnk small{display:block;color:var(--ink-3);font-size:12px;font-weight:500}
+.lnk-ico{flex:none;width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff}
+.lnk.hs .lnk-ico{background:#FF7A59}.lnk.dash .lnk-ico{background:var(--head)}
+.lnk-arr{margin-left:auto;color:var(--ink-3);font-weight:700}
+.lnk-off{opacity:.6;border-style:dashed}
+@media (max-width:420px){.links{grid-template-columns:1fr}}
+/* Enviar mensaje con más presencia */
+.msg-box{border:1.5px solid #25A366;border-radius:14px;padding:0;background:var(--surface);overflow:hidden;margin:22px 0 8px;box-shadow:0 2px 10px rgba(37,163,102,.08)}
+.msg-head{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;background:#E9F7EF;border-bottom:1px solid #CDEBD9}
+.msg-head h3{margin:0 0 2px;font-size:16px;color:#0F5E40}
+.msg-head p{margin:0;font-size:13px;color:#2E6B52}
+.msg-ico{flex:none;width:36px;height:36px;border-radius:50%;background:#25A366;color:#fff;display:flex;align-items:center;justify-content:center}
+.msg-box .msg-opts{padding:14px 16px 0}
+.msg-box .msg-foot{padding:0 16px 14px}
+.msg-box .msg-hist{margin:0;padding:0 16px 10px}
+.msg-chk{background:var(--surface)}
+.msg-chk:has(input:checked){border-color:#25A366;background:#F1FAF5}
+.msg-chk input{accent-color:#25A366}
+#btnMsg{background:#25A366;border-color:#25A366;color:#fff}
+#btnMsg:hover:not(:disabled){background:#1E8B57;border-color:#1E8B57}
+:root[data-theme="dark"] .msg-head{background:#123526;border-color:#1E4A36}
+:root[data-theme="dark"] .msg-head h3,:root[data-theme="dark"] .msg-head p{color:#9FE6C4}
+:root[data-theme="dark"] .msg-chk:has(input:checked){background:#16301F}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .msg-head{background:#123526;border-color:#1E4A36}:root:not([data-theme="light"]) .msg-head h3,:root:not([data-theme="light"]) .msg-head p{color:#9FE6C4}:root:not([data-theme="light"]) .msg-chk:has(input:checked){background:#16301F}}
+
+.tag-sit.riesgo{background:#F3E8FF;color:#6B2BB5}
+.sus.sit-riesgo{background:#F3E8FF;color:#6B2BB5}
+
+.msg-chk.off{opacity:.55;cursor:not-allowed;background:var(--surface-2)}
+.msg-chk .soon{font-style:normal;font-size:11px;font-weight:700;background:var(--surface-2);color:var(--ink-3);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:middle}
+.err-t.small{font-size:12px;width:100%}
 </style>
 </head>
 <body>
@@ -341,7 +453,7 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
       <select id="fEjec"><option value="">Todos</option></select>
     </label>
     <label class="pill-select" id="pSit"><span class="pl">Situación</span>
-      <select id="fSit"><option value="">Todas</option><option value="bloq">Siguen bloqueadas</option><option value="fuera">Ya no están bloqueadas</option></select>
+      <select id="fSit"><option value="">Todas</option><option value="bloq">Siguen bloqueadas</option><option value="fuera">Ya no están bloqueadas</option><option value="riesgo">Riesgo alto</option></select>
     </label>
     <label class="pill-select" id="pSus"><span class="pl">Suscripción</span>
       <select id="fSus"><option value="">Todas</option><option value="si">Activa</option><option value="no">Sin suscripción</option></select>
@@ -454,6 +566,16 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
     </form>
   </div>
 </div>
+<div class="modal" id="editModal" role="dialog" aria-labelledby="editTitle">
+  <div class="box">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+      <div><h2 id="editTitle">Editar llamado</h2><p class="muted" id="editSub" style="margin:0 0 12px"></p></div>
+      <button class="x" id="editClose" type="button" aria-label="Cerrar">×</button>
+    </div>
+    <div class="log edit-form" id="editBody"></div>
+    <div class="form-foot" style="margin-top:14px;justify-content:flex-end;gap:8px"><button class="btn" id="editCancel" type="button">Cancelar</button><button class="btn primary" id="editSave" type="button">Guardar cambios</button></div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -536,7 +658,7 @@ function mapCuenta(c){
     close:toD(c.fecha_alta),ventas:c.ventas,lastSale:last,daysNoSale:daysSince(last),ejecId:c.ejecutivo_id||"",
     ejec:c.ejecutivo||"Sin asignar",tel:c.telefono||"",lastLogin:login,sus:c.suscripcion_activa,
     icLast:toD(c.ic_ultimo_llamado),icAtendido:c.ic_ultimo_atendido,icPor:c.ic_ultimo_por||"",
-    enFiltro:c.en_filtro!==false,estadoDash:c.estado_dash||"",estadoCom:c.estado_comercial||"",bajaHs:!!c.solicita_baja_hs,daysNoLogin:daysSince(login),
+    enFiltro:c.en_filtro!==false,etiqueta:c.etiqueta||"",estadoDash:c.estado_dash||"",estadoCom:c.estado_comercial||"",bajaHs:!!c.solicita_baja_hs,daysNoLogin:daysSince(login),
     dash:c.link_dash||(/^\d+$/.test(c.account_id||"")?`https://dash.fu.do/accounts/${c.account_id}`:""),estadoDate:toD(c.fecha_estado),lastOkCall:toD(c.ultimo_llamado_exitoso)};
 }
 async function loadCuentas(){
@@ -563,6 +685,7 @@ async function loadSyncInfo(){
 function start(){
   loadCuentas(); loadGestion(); loadSyncInfo();
   sb.channel("gestiones").on("postgres_changes",{event:"*",schema:"public",table:"gestiones"},p=>{
+    if(p.eventType==="DELETE"&&p.old&&p.old.deal_id){delete gestion[p.old.deal_id];render();if(selected&&selected.id===p.old.deal_id)renderDrawerHeaderBits();return}
     const r=p.new&&p.new.deal_id?p.new:null; if(r){gestion[r.deal_id]=r;render();if(selected&&selected.id===r.deal_id)renderDrawerHeaderBits();if(vista==="avance"){clearTimeout(window.__ra);window.__ra=setTimeout(renderAdmin,800)}}
   }).subscribe();
   let t=null;
@@ -572,6 +695,7 @@ function start(){
 /* ---------- List ---------- */
 // Situación actual en HubSpot de las cuentas gestionadas que ya no cumplen el criterio de la campaña
 function situacion(d){
+  if(d.etiqueta) return {k:"riesgo",label:d.etiqueta};
   if(d.enFiltro) return null;
   if(d.bajaHs||d.estadoCom==="Baja") return {k:"baja",label:"Baja en HubSpot"};
   if(d.estadoDash&&d.estadoDash!=="Bloqueado") return {k:"desbloq",label:d.estadoDash==="Activo"?"Desbloqueada":`Desbloqueada (${d.estadoDash})`};
@@ -587,7 +711,7 @@ function fillEjecutivos(){
 }
 function baseFiltered(){
   const e=$("fEjec").value, q=$("fQ").value.trim().toLowerCase(), s=$("fSus").value, si=$("fSit").value;
-  return deals.filter(d=>(!e||d.ejec===e)&&(!s||(s==="si"?d.sus===true:d.sus!==true))&&(!si||(si==="bloq"?d.enFiltro:!d.enFiltro))&&(!q||d.name.toLowerCase().includes(q)||d.accountId.includes(q)));
+  return deals.filter(d=>(!e||d.ejec===e)&&(!s||(s==="si"?d.sus===true:d.sus!==true))&&(!si||(si==="bloq"?(d.enFiltro&&!d.etiqueta):si==="riesgo"?!!d.etiqueta:(!d.enFiltro&&!d.etiqueta)))&&(!q||d.name.toLowerCase().includes(q)||d.accountId.includes(q)));
 }
 function sortList(list){
   const s=$("fSort").value, g=id=>gestion[id]||{};
@@ -659,7 +783,7 @@ function closeDrawer(){
   if(prev){const tr=document.querySelector(`tr[data-id="${CSS.escape(prev.id)}"]`); if(tr) tr.focus()}
 }
 $("dClose").onclick=closeDrawer; $("scrim").onclick=closeDrawer;
-document.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("pwModal").classList.contains("open"))$("pwModal").classList.remove("open");else if($("teamModal").classList.contains("open"))$("teamModal").classList.remove("open");else if(selected)closeDrawer()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){if($("editModal").classList.contains("open")){$("editModal").classList.remove("open");editando=null}else if($("pwModal").classList.contains("open"))$("pwModal").classList.remove("open");else if($("teamModal").classList.contains("open"))$("teamModal").classList.remove("open");else if(selected)closeDrawer()}});
 
 function renderDrawerHeaderBits(){
   if(!selected) return;
@@ -695,8 +819,8 @@ function openDrawer(d){
       <div class="fact"><div class="k">Gestión</div><div class="v small" id="dState"></div></div>
     </div>
     <div class="links">
-      <a href="${hubspotUrl}" target="_blank" rel="noopener">Abrir en HubSpot</a>
-      ${dashUrl?`<a href="${esc(dashUrl)}" target="_blank" rel="noopener">Abrir en Dash</a>`:`<span class="muted" style="font-size:13.5px;align-self:center">Sin ID de cuenta para abrir Dash</span>`}
+      <a class="lnk hs" href="${hubspotUrl}" target="_blank" rel="noopener"><span class="lnk-ico" aria-hidden="true">HS</span><span><b>Abrir en HubSpot</b><small>Negocio en el CRM</small></span><span class="lnk-arr" aria-hidden="true">↗</span></a>
+      ${dashUrl?`<a class="lnk dash" href="${esc(dashUrl)}" target="_blank" rel="noopener"><span class="lnk-ico" aria-hidden="true">D</span><span><b>Abrir en Dash</b><small>Cuenta ${esc(d.accountId)}</small></span><span class="lnk-arr" aria-hidden="true">↗</span></a>`:`<span class="lnk lnk-off"><span><b>Dash no disponible</b><small>La cuenta no tiene ID</small></span></span>`}
     </div>
     <h3>Contactos</h3>
     <div id="contacts"><div class="skeleton" style="width:70%;margin:8px 0"></div></div>
@@ -717,8 +841,20 @@ function openDrawer(d){
       </div>
       <div class="field"><label class="lbl" for="notas">Notas</label><textarea id="notas" placeholder="Qué dijo, compromisos, próximos pasos"></textarea></div>
       <label class="sync"><input type="checkbox" id="syncHs" checked><span>Guardar el registro en HubSpot: queda como nota en el negocio y, si cargaste fecha para volver a llamar, se crea una tarea de llamada para ${esc(d.ejec==="Sin asignar"?"vos":d.ejec)}. La solicitud de baja se graba en HubSpot siempre, aunque esto esté destildado.</span></label>
-      <div class="form-foot"><span class="attempt" id="attemptN"></span><button class="btn primary" type="submit" id="btnSave">Guardar contacto</button></div>
+      <div class="form-foot"><span class="attempt" id="attemptN"></span><button class="btn primary" type="submit" id="btnSave">Registrar contacto</button></div>
     </form>
+    <section class="msg-box" aria-labelledby="msgTitle">
+      <div class="msg-head">
+        <span class="msg-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.3-.4.8-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg></span>
+        <div><h3 id="msgTitle">Enviar mensaje</h3><p>Elegí el mensaje y tocá «Enviar mensaje» para enviarlo por WhatsApp a los contactos de la cuenta.</p></div>
+      </div>
+      <div class="msg-opts">
+        ${MENSAJES.map((m,i)=>`<label class="chk msg-chk${m.activo?"":" off"}"><input type="checkbox" value="${esc(m.key)}" id="msg${i}"${m.activo?"":" disabled"}><span><b>${esc(m.label)}${m.activo?"":` <em class="soon">Próximamente</em>`}</b><small>${esc(m.desc)}</small></span></label>`).join("")}
+      </div>
+      <div class="msg-foot"><span class="muted small" id="msgSel">Ningún mensaje elegido</span><button class="btn primary" type="button" id="btnMsg" disabled>Enviar mensaje</button></div>
+      <ul class="msg-hist" id="msgHist"></ul>
+    </section>
+
     <h3>Historial de gestiones</h3>
     <ul class="hist" id="hist"><li class="muted">Cargando…</li></ul>`;
   renderDrawerHeaderBits();
@@ -731,7 +867,7 @@ function openDrawer(d){
   form.querySelectorAll('input[name="resp"]').forEach(r=>r.addEventListener("change",syncAct));
   $("baja").onchange=()=>{$("motBox").hidden=!$("baja").checked; if(!$("baja").checked){$("mot").value="";$("submot").value=""} syncAct()};
   form.onsubmit=ev=>{ev.preventDefault();saveLog(d)};
-  loadContacts(d); loadLlamados(d);
+  initMensajes(d); loadContacts(d); loadLlamados(d);
 }
 
 /* ---------- Historial ---------- */
@@ -772,10 +908,99 @@ function renderHist(){
       <div class="what">${esc(l.resultado)}${parts.length?" – "+esc(parts.join(", ")):""}</div>
       ${l.proximo_llamado?`<div class="note">Volver a llamar el ${fmtD(dLocal(l.proximo_llamado))}</div>`:""}
       ${l.notas?`<div class="note">${esc(l.notas)}</div>`:""}
-      ${hsLine(l)}${planLine(l)}</li>`;
+      ${hsLine(l)}${planLine(l)}
+      ${meRow.rol==="lider"?`<div class="hist-admin"><button type="button" data-edit="${esc(l.id)}">Editar</button><button type="button" class="del" data-del="${esc(l.id)}">Borrar</button></div>`:""}</li>`;
   }).join("");
   h.querySelectorAll("button[data-retry]").forEach(b=>b.onclick=()=>{b.disabled=true;enviarHubSpot(b.dataset.retry)});
+  h.querySelectorAll("button[data-edit]").forEach(b=>b.onclick=()=>abrirEdicion(llamadosSel.find(x=>x.id===b.dataset.edit)));
+  h.querySelectorAll("button[data-del]").forEach(b=>b.onclick=()=>borrarLlamado(llamadosSel.find(x=>x.id===b.dataset.del)));
   h.querySelectorAll("button[data-retryp]").forEach(b=>b.onclick=()=>{b.disabled=true;enviarPlanilla(b.dataset.retryp)});
+}
+
+/* ---------- Edición de llamados (solo líderes) ---------- */
+let editando=null;
+function abrirEdicion(l){
+  if(!l||meRow.rol!=="lider") return;
+  editando=l;
+  const sel=(id,vals,cur,empty)=>`<select id="${id}">${empty!=null?`<option value="">${esc(empty)}</option>`:""}${vals.map(v=>`<option${v===cur?" selected":""}>${esc(v)}</option>`).join("")}</select>`;
+  $("editTitle").textContent=`Editar llamado del ${fmtDT(toD(l.fecha))}`;
+  $("editSub").textContent=`Intento ${l.intento||"–"}, registrado por ${l.por_nombre||l.por_email}`;
+  $("editBody").innerHTML=`
+    <div class="row2">
+      <div class="field"><label class="lbl" for="eRes">Resultado</label>${sel("eRes",RESULTADOS,l.resultado)}</div>
+      <div class="field" id="eRespBox"><label class="lbl" for="eResp">Respuesta del cliente</label>${sel("eResp",RESPUESTAS,l.respuesta,"Sin respuesta")}</div>
+    </div>
+    <div class="field"><label class="lbl" for="eProp">Propuesta comercial ofrecida</label>${sel("eProp",PROPUESTAS,l.propuesta,"Sin propuesta")}</div>
+    <label class="sync"><input type="checkbox" id="eAct"${l.activacion_inmediata?" checked":""}><span><b>Activación inmediata</b></span></label>
+    <label class="sync"><input type="checkbox" id="eBaja"${l.solicita_baja?" checked":""}><span><b>El cliente solicita la baja</b></span></label>
+    <div class="row2" id="eMotBox"${l.solicita_baja?"":" hidden"}>
+      <div class="field"><label class="lbl" for="eMot">Motivo de baja</label>${sel("eMot",MOTIVOS,l.motivo,"Elegí el motivo")}</div>
+      <div class="field"><label class="lbl" for="eSub">Submotivo de baja</label>${sel("eSub",SUBMOTIVOS,l.submotivo,"Sin submotivo")}</div>
+    </div>
+    <div class="row2">
+      <div class="field"><label class="lbl" for="eTel">Teléfono usado</label><input id="eTel" type="text" value="${esc(l.telefono||"")}"></div>
+      <div class="field"><label class="lbl" for="eProx">Volver a llamar el</label><input id="eProx" type="date" value="${esc(l.proximo_llamado||"")}"></div>
+    </div>
+    <div class="field"><label class="lbl" for="eNotas">Notas</label><textarea id="eNotas">${esc(l.notas||"")}</textarea></div>
+    <p class="muted edit-note">Los cambios se guardan en el panel y actualizan el estado de la cuenta. No modifican lo que ya se envió a HubSpot ni a la planilla de Administración.</p>`;
+  const sync=()=>{const at=$("eRes").value==="Atendió";$("eRespBox").style.visibility=at?"visible":"hidden";$("eMotBox").hidden=!$("eBaja").checked};
+  $("eRes").onchange=sync; $("eBaja").onchange=sync; sync();
+  $("editModal").classList.add("open"); $("eRes").focus();
+}
+$("editClose").onclick=$("editCancel").onclick=()=>{$("editModal").classList.remove("open");editando=null};
+$("editSave").onclick=async()=>{
+  if(!editando) return;
+  const baja=$("eBaja").checked;
+  if(baja&&!$("eMot").value){toast("Elegí el motivo de baja");return}
+  $("editSave").disabled=true;
+  const {error}=await sb.rpc("editar_llamado",{p_id:editando.id,p_resultado:$("eRes").value,p_respuesta:$("eRes").value==="Atendió"?$("eResp").value:"",
+    p_propuesta:$("eProp").value,p_solicita_baja:baja,p_motivo:baja?$("eMot").value:null,p_submotivo:baja?$("eSub").value:null,
+    p_activacion:$("eAct").checked,p_telefono:$("eTel").value.trim(),p_proximo:$("eProx").value||null,p_notas:$("eNotas").value.trim()});
+  $("editSave").disabled=false;
+  if(error){toast("No se pudo guardar: "+error.message);return}
+  $("editModal").classList.remove("open"); editando=null; toast("Llamado actualizado");
+  if(selected) loadLlamados(selected);
+};
+async function borrarLlamado(l){
+  if(!l||meRow.rol!=="lider") return;
+  if(!confirm(`¿Borrar el llamado del ${fmtDT(toD(l.fecha))} registrado por ${l.por_nombre||l.por_email}?\n\nEl estado de la cuenta se recalcula con los llamados que queden. Lo que ya se envió a HubSpot no se borra.`)) return;
+  const {error}=await sb.rpc("borrar_llamado",{p_id:l.id});
+  if(error){toast("No se pudo borrar: "+error.message);return}
+  toast("Llamado borrado"); if(selected) loadLlamados(selected);
+}
+
+/* ---------- Mensajes por WhatsApp (workflow de HubSpot) ---------- */
+const MENSAJES=[
+  {key:"promo",label:"Contactar por HSM con promoción",desc:"Plantilla de WhatsApp con la promoción vigente",activo:true},
+  {key:"seguimiento",label:"Contactar para seguimiento",desc:"Retoma una gestión en curso con la cuenta",activo:false},
+  {key:"abrir",label:"Contactar para abrir conversación",desc:"Mensaje para iniciar el diálogo cuando no atienden",activo:false}
+];
+let mensajesCuenta=[];
+function initMensajes(d){
+  const box=document.querySelector(".msg-box"); if(!box) return;
+  const checks=[...box.querySelectorAll("input[type=checkbox]:not(:disabled)")];
+  const upd=()=>{const n=checks.filter(c=>c.checked);$("btnMsg").disabled=!n.length;
+    $("msgSel").textContent=n.length?(n.length===1?"1 mensaje elegido":n.length+" mensajes elegidos"):"Ningún mensaje elegido"};
+  checks.forEach(c=>c.onchange=upd);
+  $("btnMsg").onclick=async()=>{
+    const sel=MENSAJES.filter(m=>m.activo&&checks.find(c=>c.value===m.key&&c.checked));
+    if(!sel.length) return;
+    if(!confirm(`¿Enviar ${sel.map(m=>"«"+m.label+"»").join(" y ")} a los contactos de ${d.name}?`)) return;
+    const b=$("btnMsg"); b.disabled=true; b.textContent="Enviando…";
+    const {data,error}=await sb.functions.invoke("enviar-mensaje",{body:{deal_id:d.id,mensajes:sel.map(m=>m.key)}});
+    b.textContent="Enviar mensaje"; checks.forEach(c=>c.checked=false); upd();
+    if(error) toast("No se pudo enviar: "+await fnError(error)); else toast(sel.length===1?"Mensaje enviado":"Mensajes enviados");
+    if(selected===d) cargarMensajes(d);
+  };
+  cargarMensajes(d);
+}
+async function cargarMensajes(d){
+  const {data}=await sb.from("mensajes_enviados").select("*").eq("deal_id",d.id).order("fecha",{ascending:false}).limit(20);
+  if(selected!==d) return; mensajesCuenta=data||[]; renderMsgHist(d);
+}
+function renderMsgHist(d){
+  const h=$("msgHist"); if(!h) return;
+  h.innerHTML=mensajesCuenta.map(x=>`<li><span class="dot" style="background:${x.hs_estado==="ok"?"var(--s-acep)":"var(--s-rech)"}"></span><b>${esc(x.mensaje)}</b> <span class="muted">${fmtDT(toD(x.fecha))}, ${esc(x.por_nombre||x.por_email)}</span>${x.hs_estado==="ok"?"":`<span class="err-t small">No se envió: ${esc(x.hs_detalle||"")}</span>`}</li>`).join("");
 }
 
 /* ---------- Guardar ---------- */
@@ -794,7 +1019,7 @@ async function saveLog(d){
     p_motivo:motivo,p_telefono:$("tel").value.trim(),p_proximo:$("prox").value||null,p_notas:$("notas").value.trim(),p_enviar_hs:enviar,p_solicita_baja:baja,p_activacion:act,p_submotivo:submotivo||null});
   saving=false; if($("btnSave")) $("btnSave").disabled=false;
   if(error){toast("No se pudo guardar: "+error.message);return}
-  toast("Contacto guardado");
+  toast("Contacto registrado");
   const tel=$("tel").value, prox=$("prox").value;
   $("logForm").reset();$("respBox").hidden=true;$("motBox").hidden=true;$("actBox").hidden=true;$("tel").value=tel;$("prox").value=prox;$("syncHs").checked=true;
   loadLlamados(d);
