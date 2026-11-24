@@ -396,6 +396,16 @@ tbody td span[class=""],tbody td .days-hot,tbody td .days-cold,tbody td .muted{w
 .tag-sit.riesgo{background:#F3E8FF;color:#6B2BB5}
 .sus.sit-riesgo{background:#F3E8FF;color:#6B2BB5}
 .tag-sit.caida{background:#FFE9D6;color:#9A4A00}
+.crit{display:inline-block;font-size:11.5px;font-weight:700;border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:middle}
+.crit.c-critico{background:#FBE3E1;color:#8E2A24}.crit.c-alto{background:#FDEBD8;color:#9A4A00}.crit.c-medio{background:#FFF6CC;color:#6B5800}
+.caida-box{border:1.5px solid #F2B47E;background:#FFF7F0;border-radius:12px;padding:12px 14px;margin:0 0 16px}
+.caida-box h3{margin:0 0 8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.caida-box .ck{font-size:12px;color:var(--ink-3);margin-top:8px}
+.caida-box .cv{font-size:14px;color:var(--ink)}
+.caida-box ul{margin:2px 0 0;padding-left:18px}.caida-box li{margin:2px 0;font-size:14px}
+.caida-box a{font-size:13px;font-weight:600}
+:root[data-theme="dark"] .caida-box{background:#2A1D12;border-color:#6B4421}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .caida-box{background:#2A1D12;border-color:#6B4421}}
 .sus.sit-caida{background:#FFE9D6;color:#9A4A00}
 .kpi .s b{color:var(--ink)}
 
@@ -618,6 +628,7 @@ const esCaida = d => !!d && d.etiqueta === ETQ_CAIDA;
 const MOTIVOS = ["Cierre definitivo","Cierre temporal","Precio","Servicio","Problemas técnicos","Producto","Cambio dueño","Sistema propio","Desarrollo con IA","Sin respuesta","Otro"];
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let caidaInfo={};
 let vista="llamados", me=null, meRow=null, deals=[], gestion={}, filtroEstado=null, selected=null, llamadosSel=[], chLlamados=null, started=false;
 
 const $=id=>document.getElementById(id);
@@ -689,6 +700,11 @@ async function loadGestion(){
   if(error){banner("No se pudo leer la gestión: "+esc(error.message),"err");return}
   gestion={}; data.forEach(g=>gestion[g.deal_id]=g); render(); renderDrawerHeaderBits();
 }
+async function loadCaidaInfo(){
+  const {data,error}=await sb.from("caida_info").select("*");
+  if(error) return;
+  caidaInfo={}; data.forEach(r=>caidaInfo[r.deal_id]=r); render();
+}
 async function loadSyncInfo(){
   const {data}=await sb.from("sync_log").select("*").order("id",{ascending:false}).limit(1);
   const s=data&&data[0];
@@ -697,7 +713,7 @@ async function loadSyncInfo(){
   if(!s.ok) banner("La última actualización desde HubSpot falló: "+esc(s.detalle||""),"err");
 }
 function start(){
-  loadCuentas(); loadGestion(); loadSyncInfo();
+  loadCuentas(); loadGestion(); loadSyncInfo(); loadCaidaInfo();
   sb.channel("gestiones").on("postgres_changes",{event:"*",schema:"public",table:"gestiones"},p=>{
     if(p.eventType==="DELETE"&&p.old&&p.old.deal_id){delete gestion[p.old.deal_id];render();if(selected&&selected.id===p.old.deal_id)renderDrawerHeaderBits();return}
     const r=p.new&&p.new.deal_id?p.new:null; if(r){gestion[r.deal_id]=r;render();if(selected&&selected.id===r.deal_id)renderDrawerHeaderBits();if(vista==="avance"){clearTimeout(window.__ra);window.__ra=setTimeout(renderAdmin,800)}}
@@ -714,6 +730,20 @@ function situacion(d){
   if(d.bajaHs||d.estadoCom==="Baja") return {k:"baja",label:"Baja en HubSpot"};
   if(d.estadoDash&&d.estadoDash!=="Bloqueado") return {k:"desbloq",label:d.estadoDash==="Activo"?"Desbloqueada":`Desbloqueada (${d.estadoDash})`};
   return {k:"otro",label:"Fuera del criterio"+(d.estadoCom?` (${d.estadoCom})`:"")};
+}
+const critKey=c=>String(c||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+function critTag(d){const ci=esCaida(d)&&caidaInfo[d.id];return ci&&ci.criticidad?`<span class="crit c-${critKey(ci.criticidad)}">${esc(ci.criticidad)}</span>`:""}
+function caidaBox(d){
+  const ci=esCaida(d)&&caidaInfo[d.id]; if(!ci) return "";
+  const partes=String(ci.que_dice||"").split(" | ").map(x=>x.trim()).filter(Boolean);
+  const conv=ci.conversacion_id?`https://app.intercom.com/a/apps/ti1ln81q/inbox/inbox/conversation/${encodeURIComponent(ci.conversacion_id)}`:"";
+  return `<section class="caida-box" aria-label="Reclamo por la caída">
+    <h3>Reclamo por la caída 21/11${ci.criticidad?`<span class="crit c-${critKey(ci.criticidad)}">${esc(ci.criticidad)}</span>`:""}${ci.categoria?` <span class="muted small" style="font-weight:400">${esc(ci.categoria)}</span>`:""}</h3>
+    <div class="ck">Beneficio recibido</div><div class="cv">${esc(ci.beneficio||"Sin dato")}</div>
+    <div class="ck">Qué dice</div>${partes.length>1?`<ul>${partes.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:`<div class="cv">${esc(partes[0]||"–")}</div>`}
+    <div class="ck">Notas</div><div class="cv">${esc(ci.notas||"Sin notas")}</div>
+    ${conv?`<div class="ck"><a href="${esc(conv)}" target="_blank" rel="noopener">Abrir la conversación en Intercom ↗</a></div>`:""}
+  </section>`;
 }
 function estadoDe(id){const g=gestion[id];return g&&g.estado&&ESTADOS[g.estado]?g.estado:"pendiente"}
 function fillSituacion(){
@@ -781,7 +811,7 @@ function render(){
     const dcls=ds==null?"muted":ds<=30?"days-hot":ds>90?"days-cold":"";
     const dl=d.daysNoLogin, lcls=dl==null?"muted":dl<=7?"days-hot":dl>30?"days-cold":"";
     return `<tr data-id="${esc(d.id)}" class="${selected&&selected.id===d.id?"sel":""}" tabindex="0">
-      <td><div class="acc-name">${esc(d.name)}${d.sus===true?`<span class="tag-sus" title="Suscripción activa">Susc. activa</span>`:""}${(s=>s?`<span class="tag-sit ${s.k}">${esc(s.label)}</span>`:"")(situacion(d))}</div><div class="acc-id">ID ${esc(d.accountId||"–")}</div></td>
+      <td><div class="acc-name">${esc(d.name)}${d.sus===true?`<span class="tag-sus" title="Suscripción activa">Susc. activa</span>`:""}${(s=>s?`<span class="tag-sit ${s.k}">${esc(s.label)}</span>`:"")(situacion(d))}${critTag(d)}</div><div class="acc-id">ID ${esc(d.accountId||"–")}</div></td>
       <td>${esc(d.ejec)}</td>
       <td class="muted">${esc(d.plan||"–")}</td>
       <td class="num">${fmtN(d.ventas)}</td>
@@ -826,7 +856,7 @@ function openDrawer(d){
   const hubspotUrl=`https://app.hubspot.com/contacts/${HS_PORTAL}/record/0-3/${encodeURIComponent(d.id)}`;
   const dashUrl=/^https?:\/\//.test(d.dash)?d.dash:"";
   const opt=(name,vals)=>vals.map((v,i)=>`<input type="radio" name="${name}" id="${name}${i}" value="${esc(v)}"><label for="${name}${i}">${esc(v)}</label>`).join("");
-  $("dBody").innerHTML=`
+  $("dBody").innerHTML=`${caidaBox(d)}
     <div class="facts">
       <div class="fact"><div class="k">Plan</div><div class="v small">${esc(d.plan||"–")}</div></div>
       <div class="fact"><div class="k">Cantidad de ventas</div><div class="v">${fmtN(d.ventas)}</div></div>
