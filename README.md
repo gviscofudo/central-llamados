@@ -1,6 +1,8 @@
 # Central de llamados – Fudo CS
 
-Panel del equipo de CS para la campaña de retención sobre cuentas de Argentina bloqueadas en Dash con estado comercial activo, más cuentas sumadas a mano con etiqueta (por ejemplo «Riesgo alto»).
+Panel del equipo de CS para la campaña de retención sobre cuentas de Argentina bloqueadas en Dash con estado comercial activo, más cuentas sumadas a mano con etiqueta (por ejemplo «Riesgo alto» o «Caída 21/11»).
+
+La campaña «Caída 21/11» (quejas de Argentina por la caída del sábado 21/11) usa sus propias propuestas de compensación en la ficha y tiene su panel en la pestaña «Caída 21/11» (solo líderes): contactados, aceptan, no aceptan y piden baja. La vista `metricas_campana` de Supabase da los mismos números por etiqueta.
 
 ## Qué hay en este repo
 - `index.html`: la aplicación completa (página estática publicada con GitHub Pages).
